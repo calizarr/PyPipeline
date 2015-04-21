@@ -1,0 +1,35 @@
+#!/home/clizarraga/usr/python/bin/bin/python3.4
+import sys
+# Equivalent to Perl's FindBin...sorta
+import os
+bindir = os.path.abspath(os.path.dirname(__file__))
+
+# Python 3.4 Configuration Parser
+import configparser
+
+# Multi processing begins.
+import multiprocessing as mp
+q = mp.Queue()
+
+# Reading configuration file.
+if len(sys.argv)==1:
+    sys.exit("usage: py3 {0}  <Config file>\n\n".format(__file__))
+
+Config = configparser.ConfigParser()
+Config.read(sys.argv[1])
+nThreads = Config.get("OPTIONS","Threads")
+
+print("Recognizing {0} as max threading...".format(nThreads))
+
+ref = Config.get("PATHS","reference")
+LineNo = len(Config["NUMBER_MULTIPLE"])
+print("Finding total number of files: {0}".format(LineNo))
+
+for i in LineNo:
+    q.put(i)
+
+for i in range(0,1):
+
+
+def worker():
+    

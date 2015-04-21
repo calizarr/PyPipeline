@@ -1,0 +1,134 @@
+[OPTIONS]
+Threads		= 8
+snpRate		= 0.2
+minCov		= 1
+LengthOf5pTrim = 15
+Min3pQuality = 30
+Min3pLength  = 50
+
+[PIPELINE]
+FivePrimeFilter	= 1
+ThreePrimeFilter= 1
+PairedEnd	= 1
+Compressed	= 1
+
+[PATHS]
+bwa 		= /nfs4shares/bioinfosw/installs_current/bwa-0.7.10
+samtools	= /nfs4shares/bioinfosw/installs_current/samtools
+delly		= /home/clizarraga/scripts/Pipeline/bin/delly_v0.5.4_parallel_linux_x86_64bit
+RunDelly	= /home/clizarraga/scripts/Pipeline/RunDelly.bestN.pl
+depthScript	= /home/clizarraga/scripts/Pipeline/GetMaxPerContig.pl
+bcftools	= /nfs4shares/bioinfosw/installs_current/bcftools
+reference	= /shares/tmockler_share/Genomes/Brachypodium_distachyon/BRACHYPODIUM_2.1/Brachypodium_distachyon.main_genome.fasta
+FivePrimeTrimmer= /home/clizarraga/scripts/Pipeline/Lib/TrimFrontFastq.pl
+fastq_quality_trimmer = /nfs4shares/bioinfosw/installs_current/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64/fastq_quality_trimmer
+PairsAndOrphans = /home/clizarraga/scripts/Pipeline/Scripts/GetPairsSinglesFastqs.Illumina1.8.pl
+makedb		= /nfs4shares/bioinfosw/installs_current/ncbi-blast-2.2.30+/bin/makeblastdb
+blast		= /nfs4shares/bioinfosw/installs_current/ncbi-blast-2.2.30+
+
+
+[DIRECTORIES]
+reference	= /shares/tmockler_share/Genomes/Brachypodium_distachyon/BRACHYPODIUM_2.1/
+data_dir	= /shares/tmockler_share/Data/Illumina/Brachypodium/downloads1.jgi-psf.org/downloads/Jvogel/fastq_120130/
+filtered_dir	= /home/clizarraga/bdaccessions/Data_Final
+output_dir	= /home/clizarraga/bdaccessions/Results
+temp_dir	= /home/clizarraga/bdaccessions/Temp
+
+[COMBINE_ACCESSIONS]
+#### Accession = Prefix for combinable accessions
+10 = Bdi1-1
+11 = Bd21-3
+12 = Bd21Control
+13 = Bd30-1
+14 = BdTR11I
+15 = BdTR12c
+16 = BdTR2B
+17 = BdTR3C
+18 = BdTR8i
+19 = Bis-1
+20 = Kah-1
+21 = Koz-3
+22 = Tek-4
+
+[SINGLE_ACCESSIONS]
+#### Accession = Prefix for single, quality control accessions
+23 = Adi-10
+24 = Adi-12
+25 = Adi-2
+26 = Bd18-1
+27 = Bd2-3
+28 = BdTR10C
+29 = BdTR11A
+30 = BDTR11G
+31 = BdTR13a
+32 = BdTR13C
+33 = BdTR1i
+34 = BdTR2G
+35 = BdTR5I
+36 = BdTR7a
+37 = BdTR9K
+38 = Gaz-8
+
+[DATA]
+### Number = Full Filename(s) Accession.<unknown>.<unknown>.fastq.gz
+10 = Bd1-1.1157.3.1204.fastq.gz,Bd1-1.711.1.962.fastq.gz,Bd1-1.711.3.962.fastq.gz,Bd1-1.711.5.962.fastq.gz,Bd1-1.711.7.962.fastq.gz,Bd1-1.798.2.1041.fastq.gz,Bd1-1.798.3.1041.fastq.gz,Bd1-1.798.4.1041.fastq.gz
+11 = Bd21-3.671.3.916.fastq.gz,Bd21-3.671.4.916.fastq.gz,Bd21-3.671.5.916.fastq.gz,Bd21-3.671.6.916.fastq.gz
+12 = Bd21Control.1772.3.1600.fastq.gz,Bd21Control.2042.3.1728.fastq.gz
+13 = Bd30-1.773.3.981.fastq.gz,Bd30-1.773.4.981.fastq.gz,Bd30-1.773.5.981.fastq.gz,Bd30-1.773.6.981.fastq.gz
+14 = BdTR11I.1774.3.1601.fastq.gz,BdTR11I.1999.5.1704.fastq.gz
+15 = BdTR12c.1007.6.1138.fastq.gz,BdTR12c.1033.6.1150.fastq.gz,BdTR12c.1116.1.1188.fastq.gz,BdTR12c.1116.2.1188.fastq.gz,BdTR12c.1116.3.1188.fastq.gz,BdTR12c.1116.4.1188.fastq.gz
+16 = BdTR2B.1909.5.1665.fastq.gz,BdTR2B.2041.1.1727.fastq.gz
+17 = BdTR3C.1634.4.1486.fastq.gz,BdTR3C.1682.4.1520.fastq.gz
+18 = BdTR8i.1883.4.1652.fastq.gz,BdTR8i.1957.4.1684.fastq.gz,BdTR8i.2038.4.1726.fastq.gz
+19 = Bis-1.1883.7.1652.fastq.gz,Bis-1.1957.7.1684.fastq.gz,Bis-1.2038.2.1726.fastq.gz
+20 = Kah-1.1885.7.1658.fastq.gz,Kah-1.1957.5.1684.fastq.gz
+21 = Koz-3.1007.7.1138.fastq.gz,Koz-3.1033.7.1150.fastq.gz,Koz-3.1088.1.1180.fastq.gz,Koz-3.1088.3.1180.fastq.gz,Koz-3.1088.5.1180.fastq.gz,Koz-3.1088.7.1180.fastq.gz
+22 = Tek-4.1883.5.1652.fastq.gz,Tek-4.1957.6.1684.fastq.gz
+23 = Adi-10.1702.3.1553.fastq.gz
+24 = Adi-12.1737.5.1585.fastq.gz
+25 = Adi-2.2001.4.1706.fastq.gz
+26 = Bd18-1.1883.6.1652.fastq.gz
+27 = Bd2-3.1710.3.1556.fastq.gz
+28 = BdTR10C.1702.1.1553.fastq.gz
+29 = BdTR11A.1909.1.1665.fastq.gz
+30 = BdTR11G.1999.3.1704.fastq.gz
+31 = BdTR13a.2152.3.1802.fastq.gz
+32 = BdTR13C.1710.6.1556.fastq.gz
+33 = BdTR1i.2152.1.1796.fastq.gz
+34 = BdTR2G.1710.1.1556.fastq.gz
+35 = BdTR5I.1710.5.1556.fastq.gz
+36 = BdTR7a.2152.5.1797.fastq.gz
+37 = BdTR9K.1710.7.1556.fastq.gz
+38 = Gaz-8.1730.2.1598.fastq.gz
+
+[NUMBER_MULTIPLE]
+#### Number = Number of files per accession
+10 = 8
+11 = 4
+12 = 2
+13 = 4
+14 = 2
+15 = 6
+16 = 2
+17 = 2
+18 = 3
+19 = 3
+20 = 2
+21 = 6
+22 = 2
+23 = 1
+24 = 1
+25 = 1
+26 = 1
+27 = 1
+28 = 1
+29 = 1
+30 = 1
+31 = 1
+32 = 1
+33 = 1
+34 = 1
+35 = 1
+36 = 1
+37 = 1
+38 = 1

@@ -8,19 +8,32 @@ Min3pLength  = 60
 phred        = 64
 
 [PIPELINE]
-FivePrimeFilter	= 1
-ThreePrimeFilter= 1
+FivePrimeFilter	= 0
+ThreePrimeFilter= 0
 PairedEnd	= 1
-Compressed	= 1
+Compressed	= 0
+SortSam         = 1
+MarkDups        = 0
+ReadGroups      = 0
+RealignTC       = 1
+IndelRealign    = 0
+HaplotypeCall   = 0
+
+[GATK]
+gtmode          = DISCOVERY
+outmode         = EMIT_ALL_SITES
 
 [PATHS]
 samtools	= /nfs4shares/bioinfosw/installs_current/samtools/samtools
 bowtie2         =  /nfs4shares/bioinfosw/installs_current/bowtie2-2.1.0/bowtie2
 bcftools	= /nfs4shares/bioinfosw/installs_current/samtools/bcftools/bcftools
-reference	= /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.hardmasked.Bd5.fa
-FivePrimeTrimmer= /home/clizarraga/scripts/Pipeline/Lib/TrimFrontFastq.pl
+picard          = /nfs4shares/bioinfosw/installs_current/picard/dist/picard.jar
+gatk            = /home/clizarraga/usr/local/gatk/GenomeAnalysisTK.jar
+java            = /home/clizarraga/usr/bin/java8
+reference       = /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.hardmasked.Bd5.fa
+FivePrimeTrimmer= /home/clizarraga/scripts/PyPipeline/Tools/TrimFrontFastq.pl
 fastq_quality_trimmer = /nfs4shares/bioinfosw/installs_current/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64/fastq_quality_trimmer
-PairsAndOrphans = /home/clizarraga/scripts/Pipeline/Scripts/GetPairsSinglesFastqs.Illumina1.8.pl
+PairsAndOrphans = /home/clizarraga/scripts/PyPipeline/Tools/GetPairsSinglesFastqs.Illumina1.8.pl
 # indices         = /shares/tmockler_share/Genomes/Brachypodium_distachyon/Brachypodium_2.1_jgi_283/assembly/Bdistachyon_283_bowtie2.hardmask
 indices         = /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.bowtie2.Bd5.hardmask
 fqscript        = /home/clizarraga/scripts/PyPipeline/Tools/findFastq.pl

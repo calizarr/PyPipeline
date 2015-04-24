@@ -40,23 +40,24 @@ def worker(i):
     # Lists to hold paths and garbage to be collected.
     CurrentSourcePaths = []
     GarbageCollector = []
-    dir = DataDir
-    print("Working with {0}".format(dir))
+    directory = DataDir
+    print("Working with {0}".format(directory))
     # Attempting to get the read files.
     # DIR = os.listdir(dir)
     try:
-        DIR = os.listdir(dir)
+        DIR = os.listdir(directory)
     except OSError as e:
-        print "OSError [%d]: %s at %s" % (e.errno, e.strerror, e.filename)
+        print("OSError [%d]: %s at %s" % (e.errno, e.strerror, e.filename))
     CurrentFiles = []
     for filename in DIR:
         if base in filename:
-            CurrentFiles.append(os.path.abspath(filename))
+            CurrentFiles.append(directory+"/"+filename)
     # Read files should've been acquired.
-    print("These are the files we have acquired: \n")
-    print(CurrentFiles,"\n")
-    if Config.get("PIPELINE", "Compressed"):
-        print("Treating files as compressed. \n")
+    print("These are the files we have acquired:\n{0}".format(CurrentFiles))
+    CurrentSourcePaths = CurrentFiles[:]
+
+    if Config.getint("PIPELINE", "Compressed"):
+        print("Treating files as compressed.")
         thisSet = CurrentSourcePaths[:]
         CurrentSourcePaths = []
         for filename in thisSet:
@@ -68,88 +69,98 @@ def worker(i):
             else:
                 CurrentSourcePaths.append(filename)
 
-    # if Config.get("PIPELINE", "FivePrimeFilter"):
-    #     print("Trimming 5' end of sequences...\n")
-    #     thisSet = CurrentSourcePaths[:]
-    #     print("The current files to be used: {0} \n".format(thisSet))
-    #     CurrentSourcePaths = []
-    #     script = Config.get("PATHS", "FivePrimeTrimmer")
-    #     length = Config.get("OPTIONS", "LengthOf5pTrim")
-    #     for filename in thisSet:
-    #         oPath = filename
-    #         oPath = oPath.replace("fastq", "5pTrim.fastq")
-    #         oPath = oPath.replace("fq", "5pTrim.fastq")
-    #         print("The output path is: {0}\n".format(oPath))
-    #         command = "{0} {1} -i {2} -o {3}".format(script, opts, filename, oPath)
-    #         print("Running command: {0}\n".format(command))
-    #         subprocess.call(command, shell=True)
-    #         CurrentSourcePaths.append(oPath)
-    #         GarbageCollector.append(oPath)
+    if Config.getint("PIPELINE", "FivePrimeFilter"):
+        # Think about parallelizing so that both read files are done at once.
+        print("Trimming 5' end of sequences...")
+        thisSet = CurrentSourcePaths[:]
+        print("The current files to be used:\n{0}".format(thisSet))
+        CurrentSourcePaths = []
+        script = Config.get("PATHS", "FivePrimeTrimmer")
+        length = Config.get("OPTIONS", "LengthOf5pTrim")
+        for filename in thisSet:
+            oPath = filename
+            oPath = oPath.replace("fastq", "5pTrim.fastq")
+            oPath = oPath.replace("fq", "5pTrim.fastq")
+            print("The output path is: {0}".format(oPath))
+            command = "perl {0} {1} {2} {3}".format(script, filename, oPath, length)
+            print("Running command: {0}".format(command))
+            subprocess.call(command, shell=True)
+            CurrentSourcePaths.append(oPath)
+            GarbageCollector.append(oPath)
 
-    # if Config.get("PIPELINE", "ThreePrimeFilter"):
-    #     # Always check your phred scores.
-    #     print("Trimming 3' end on quality...\n")
-    #     thisSet = CurrentSourcePaths[:]
-    #     print("The current files to be used: {0}\n".format(thisSet))
-    #     CurrentSourcePaths = []
-    #     script = Config.get("PATHS", "fastq_quality_trimmer")
-    #     MinL = Config.get("OPTIONS", "Min3pLength")
-    #     phred = Config.get("OPTIONS", "phred")
-    #     opts = "-t {0} -Q {1} -l {2}".format(MinQ, phred, MinL)
-    #     for filename in thisSet:
-    #         oPath = filename
-    #         oPath = oPath.replace("fastq", "3pTrim.fastq")
-    #         oPath = oPath.replace("fq", "3pTrim.fastq")
-    #         print("The output path is: {0}\n".format(oPath))
-    #         command = "{0} {1} -i {2} -o {3}".format(script, opts, filename, oPath)
-    #         print("Running: {0}\n".format(command))
-    #         subprocess.call(command, shell=True)
-    #         CurrentSourcePaths.append(oPath)
-    #         GarbageCollector.append(oPath)
+    if Config.getint("PIPELINE", "ThreePrimeFilter"):
+        # Always check your phred scores.
+        print("Trimming 3' end on quality...\n")
+        thisSet = CurrentSourcePaths[:]
+        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim.fastq" in filename]
+        if thisSet == []:
+            sys.exit("No 5pTrimmed fastq files")
+        print("The current files to be used: {0}\n".format(thisSet))
+        CurrentSourcePaths = []
+        script = Config.get("PATHS", "fastq_quality_trimmer")
+        MinL = Config.get("OPTIONS", "Min3pLength")
+        MinQ = Config.get("OPTIONS", "Min3pQuality")
+        phred = Config.get("OPTIONS", "phred")
+        opts = "-t {0} -Q {1} -l {2}".format(MinQ, phred, MinL)
+        for filename in thisSet:
+            oPath = filename
+            oPath = oPath.replace("fastq", "3pTrim.fastq")
+            oPath = oPath.replace("fq", "3pTrim.fastq")
+            print("The output path is: {0}\n".format(oPath))
+            command = "{0} {1} -i {2} -o {3}".format(script, opts, filename, oPath)
+            print("Running: {0}\n".format(command))
+            subprocess.call(command, shell=True)
+            CurrentSourcePaths.append(oPath)
+            GarbageCollector.append(oPath)
 
-    # if Config.get("PIPELINE", "Paired"):
-    #     print("Parsing for Pairs..\n")
-    #     thisSet = CurrentSourcePaths[:]
-    #     print("What files are we working with?\n{0}\n".format(thisSet))
-    #     CurrentSourcePaths = []
-    #     script = config.get("PATHS", "PairsAndOrphans")
-    #     R1, R2 = [],[]
-    #     for filename in thisSet:
-    #         if "R1" in filename:
-    #             R1.append(filename)
-    #         elif "R2" in filename:
-    #             R2.append(filename)
-    #     print("These are the R1s and R2s: \n{0}\n{1}\n".format(R1,R2))
-    #     T1 = "{0}/{1}.TempRead1.fastq".format(DataDir, base)
-    #     T2 = "{0}/{1}.TempRead2.fastq".format(DataDir, base)
-    #     command = "cat {0} > {1}".format(" ".join(R1), T1)
-    #     print("Running command: {0}\n".format(command))
-    #     subprocess.call(command, shell=True)
-    #     command = "cat {0} > {1}".format(" ".join(R2), T2)
-    #     print("Running command: {0}\n".format(command))
-    #     GarbageCollector.append(T1)
-    #     GarbageCollector.append(T2)
-    #     O = "{0}/{1}".format(DataDir, base)
-    #     OR1 = "{0}/{1}.R1.fastq".format(DataDir, base)
-    #     OR2 = "{0}/{1}.R2.fastq".format(DataDir, base)
-    #     ORO = "{0}/{1}.orphan.fastq"
-    #     FR1 = "{0}/{1}.R1.fastq"
-    #     FR2 = "{0}/{1}.R2.fastq"
-    #     command = "perl {0} {1} {2} {3}".format(script, T1, T2, O)
-    #     print("Running command:\n{0}\n".format(command))
-    #     subprocess.call(command)
-    #     command = "mv {0} {1}".format(OR1, FR1)
-    #     print("Running command:\n{0}\n".format(command))
-    #     subprocess.call(command)
-    #     command = "mv {0} {1}".format(OR2, FR2)
-    #     print("Running command:\n{0}\n".format(command))
-    #     subprocess.call(command)
-    #     GarbageCollector.append(OR1)
-    #     GarbageCollector.append(OR2)
-    #     GarbageCollector.append(ORO)
-    #     CurrentSourcePaths.append(OR1)
-    #     CurrentSourcePaths.append(OR2)
-    #     CurrentSourcePaths.append(ORO)
+    if Config.getint("PIPELINE", "PairedEnd"):
+        print("Parsing for Pairs..\n")
+        thisSet = CurrentSourcePaths[:]
+        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim.3pTrim.fastq" in filename]
+        if thisSet == []:
+            sys.exit("No 5pTrimmed or 3pTrimmed fastq files")
+        print("What files are we working with?\n{0}\n".format(thisSet))
+        CurrentSourcePaths = []
+        script = Config.get("PATHS", "PairsAndOrphans")
+        R1, R2 = [],[]
+        for filename in thisSet:
+            if ".R1." in filename:
+                R1.append(filename)
+            elif ".R2." in filename:
+                R2.append(filename)
+        print("These are the R1s and R2s: \n{0}\n{1}\n".format(R1,R2))
+        T1 = "{0}/{1}.TempRead1.fastq".format(DataDir, base)
+        T2 = "{0}/{1}.TempRead2.fastq".format(DataDir, base)
+        command = "cat {0} > {1}".format(" ".join(R1), T1)
+        # print("Running command: {0}\n".format(command))
+        # Remove after next run, I failed to add the next command.
+        # subprocess.call(command, shell=True)
+        command = "cat {0} > {1}".format(" ".join(R2), T2)
+        # print("Running command: {0}\n".format(command))
+        # subprocess.call(command, shell=True)
+        GarbageCollector.append(T1)
+        GarbageCollector.append(T2)
+        O = "{0}/{1}".format(DataDir, base)
+        OR1 = "{0}/{1}.R1.fastq".format(DataDir, base)
+        OR2 = "{0}/{1}.R2.fastq".format(DataDir, base)
+        ORO = "{0}/{1}.orphan.fastq".format(DataDir, base)
+        FR1 = "{0}/{1}.R1.fastq".format(FiltDir, base)
+        FR2 = "{0}/{1}.R2.fastq".format(FiltDir, base)
+        command = "perl {0} {1} {2} {3}".format(script, T1, T2, O)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True) 
+        command = "mv {0} {1}".format(OR1, FR1)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+        command = "mv {0} {1}".format(OR2, FR2)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+        GarbageCollector.append(OR1)
+        GarbageCollector.append(OR2)
+        GarbageCollector.append(ORO)
+        CurrentSourcePaths.append(OR1)
+        CurrentSourcePaths.append(OR2)
+        CurrentSourcePaths.append(ORO)
     # prepFinal(OutDir, CurrentSourcePaths)
     # collectTheGarbage(GarbageCollector)
 

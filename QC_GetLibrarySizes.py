@@ -1,7 +1,6 @@
 #!/home/clizarraga/usr/python/bin/bin/python3.4
 import sys
 import subprocess
-from subprocess import Popen, PIPE
 
 # Equivalent to Perl's FindBin...sorta
 import os
@@ -35,16 +34,9 @@ def worker(i):
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
-    accessions = Config.get("DATA", i).split(',')
+    # accessions = Config.get("DATA", i).split(',')
     F1 = Config.get("DIRECTORIES", "reads")+"/"+prefix+".R1.fastq"
     F2 = Config.get("DIRECTORIES", "reads")+"/"+prefix+".R2.fastq"
-    # Technically the previous one is unsafe (untrusted input), so working on the proper method.
-    # p1 is the first step before the pipe | and p2 is the next step after the | and so on
-    # p1 = Popen(['gunzip','-c',F1], stdout=PIPE)
-    # p2 = Popen(['wc','-l'], stdin=p1.stdout, stdout=PIPE)
-    # p1.stdout.close()
-    # output = p2.communicate()[0]
-    # Nevermind for now.
     out = 0
     cmd = "wc -l "+F1
     # cmd = "head "+F1+" | wc -l"
@@ -66,13 +58,21 @@ def worker(i):
 
 if __name__ == "__main__":
     # Setup list of processes to run
-    processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # Run processes
-    for p in processes:
-        p.start()
-    # Exit the completed processes.
-    for p in processes:
-        p.join()
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+    # # Run processes
+    # for p in processes:
+    #     p.start()
+    # # Exit the completed processes.
+    # for p in processes:
+    #     p.join()
+
+    # Attempting with pool of workers.
+    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+
+    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
+    for result in results:
+        z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

@@ -1,4 +1,4 @@
-#!/home/clizarraga/usr/python/bin/bin/python3.4
+#!/home/clizarraga/usr/bin/python3.4
 import sys
 import subprocess
 # Equivalent to Perl's FindBin...sorta
@@ -33,6 +33,7 @@ def worker(i):
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
+    GarbageCollector = []
     base = prefix
     java = Config.get("PATHS", "java")
     gatk = Config.get("PATHS", "gatk")
@@ -57,11 +58,11 @@ def worker(i):
         # Realigning the Indels using the target intervals list.
         finput = "{0}/{1}.PicardSorted.DeDupped.RG.bam".format(gatkdir, base)
         target_intervals = "{0}/{1}.target_intervals.list".format(gatkdir, base)
-        foutput = "{0}/{1}.RealignedReads.bam".
-        format(gatkdir, base)
-        cmd = "{0} -T IndelRealigner -R {1} -I {2} -targetIntervals {3} -o {4}".format(callgatk, rf, finput, target_intervals, foutput)
+        foutput = "{0}/{1}.RealignedReads.bam".format(gatkdir, base)
+        cmd = "{0} -T IndelRealigner -R {1} -I {2} -targetIntervals {3} -o {4}".format(callgatk, ref, finput, target_intervals, foutput)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        GarbageCollector.append(finput)
 
     if Config.getint("PIPELINE", "HaplotypeCall"):
         # Calling the SNPs in Discovery Mode!
@@ -69,20 +70,35 @@ def worker(i):
         foutput = "{0}/{1}.raw.snps.vcf".format(gatkdir, base)
         gtmode = Config.get("GATK", "gtmode")
         outmode = Config.get("GATK", "outmode")
-        opts = "{0} -T HaploTypeCaller -R {1} -I {2} -gt_mode {3} -out_mode {4} -o {5} -nct {6}".format(callgatk, ref, finput, gtmode, outmode, foutput, nThreads)
+        cmd = "{0} -T HaplotypeCaller -R {1} -I {2} -gt_mode {3} -out_mode {4} -o {5} -nct {6}".format(callgatk, ref, finput, gtmode, outmode, foutput, nThreads) 
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
 
     
 if __name__ == "__main__":
     # Setup list of processes to run
-    processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # Run processes
-    for p in processes:
-        p.start()
-    # Exit the completed processes.
-    for p in processes:
-        p.join()
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+    # # Run processes
+    # for p in processes:
+    #     p.start()
+    # # Exit the completed processes.
+    # for p in processes:
+    #     p.join()
+    
+    # Attempting with pool of workers.
+    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+
+    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
+    for result in results:
+        z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

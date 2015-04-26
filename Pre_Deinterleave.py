@@ -33,7 +33,7 @@ def worker(i):
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
-    accessions = Config.get("DATA", i).split(',')
+    # accessions = Config.get("DATA", i).split(',')
     path = Config.get("DIRECTORIES", "combined") + "/" + prefix + ".fastq.gz"
     print("Unzipping file: "+path)
     cmd = "gunzip "+path

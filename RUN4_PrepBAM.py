@@ -33,6 +33,7 @@ def worker(i):
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
+    GarbageCollector = []
     base = prefix
     java = Config.get("PATHS", "java")
     picard = Config.get("PATHS", "picard")
@@ -52,19 +53,21 @@ def worker(i):
         cmd = "{0} SortSam I={1} O={2} SO=coordinate TMP_DIR={3}".format(callpicard, finput, foutput, tmp)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        GarbageCollector.append(finput)
 
     if Config.getint("PIPELINE", "MarkDups"):
         # Marking duplicates in the bam with PicardTools
-        finput = foutput
+        finput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)
         foutput = "{0}/{1}.PicardSorted.DeDupped.bam".format(gatkdir, base)
         metrics = "{0}/{1}.metrics".format(gatkdir, base)
         cmd = "{0} MarkDuplicates I={1} O={2} METRICS_FILE={3}".format(callpicard, finput, foutput, metrics)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        GarbageCollector.append(finput)
 
     if Config.getint("PIPELINE", "ReadGroups"):
         # Adding or Replacing Read Groups with Picard Tools
-        finput = foutput
+        finput = "{0}/{1}.PicardSorted.DeDupped.bam".format(gatkdir, base)
         # Read Group ID
         RGID = "foo"
         # Read Group Label
@@ -79,17 +82,33 @@ def worker(i):
         cmd = "{0} AddOrReplaceReadGroups I={1} O={2} RGID={3} RGLB={4} RGPL={5} RGPU={6} RGSM={7} CREATE_INDEX=True".format(callpicard, finput, foutput, RGID, RGLB, RGPL, RGPU, RGSM)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        # GarbageCollector.append(finput)
+
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
 
     
 if __name__ == "__main__":
     # Setup list of processes to run
-    processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # Run processes
-    for p in processes:
-        p.start()
-    # Exit the completed processes.
-    for p in processes:
-        p.join()
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+    # # Run processes
+    # for p in processes:
+    #     p.start()
+    # # Exit the completed processes.
+    # for p in processes:
+    #     p.join()
+
+    # Attempting with pool of workers.
+    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+
+    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
+    for result in results:
+        z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

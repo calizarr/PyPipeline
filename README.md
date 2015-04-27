@@ -43,7 +43,8 @@ You will need to replace the paths to where the files will be stored.
 
 
 Notes:
-
+If the Pipeline is run with several accessions there can only be one overall minimum quality score and length. If your reads differ significantly, make two configuration files (or more) for the reads that can't be filtered the same way.
+Filtering for SNPs or Indels and quality filtering can be done between the RUN5 and RUN6 versions. GATK2 has functions for filtering, bcftools does as well, and finally you can also make your own with linux command line tools (sed, awk, grep piped work well.)
 
 Optional:
 There are two optional phred quality score guessing scripts in the Scripts folder. One is in Python and the other one is in Perl. If you already know the quality score for your FastQ files then ignore them, but if you can't make an educated guess see if these two scripts may help you. This is important. The best way to find out Phred score quality is to manually, visually inspect the fastq files yourself.

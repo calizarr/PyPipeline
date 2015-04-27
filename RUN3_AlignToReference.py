@@ -61,6 +61,9 @@ def worker(i):
     f = open(fdir,"w")
     f.write(log)
     f.close()
+    print("Zipping read files. No longer needed.")
+    cmd = "gzip {0} {1}".format(P1, P2)
+    subprocess.call(cmd, shell=True)
 
 if __name__ == "__main__":
     # Setup list of processes to run

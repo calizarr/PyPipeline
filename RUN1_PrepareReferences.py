@@ -1,7 +1,6 @@
 #!/home/clizarraga/usr/python/bin/bin/python3.4
 import sys
 import subprocess
-from subprocess import Popen, PIPE
 
 # Equivalent to Perl's FindBin...sorta
 import os

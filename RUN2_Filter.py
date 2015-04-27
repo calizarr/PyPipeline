@@ -30,7 +30,7 @@ print("Finding total number of files: {0}".format(len(LineNo)))
 def worker(i):
     # Getting paths for everything.
     DataDir = Config.get("DIRECTORIES", "reads")
-    OutDir = Config.get("DIRECTORIES", "output_dir")
+    # OutDir = Config.get("DIRECTORIES", "output_dir")
     FiltDir = Config.get("DIRECTORIES", "filtered_dir")
     mult = int(LineNo[i])
     if mult > 1:
@@ -162,7 +162,7 @@ def worker(i):
         CurrentSourcePaths.append(OR2)
         CurrentSourcePaths.append(ORO)
     # prepFinal(OutDir, CurrentSourcePaths)
-    # collectTheGarbage(GarbageCollector)
+    collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

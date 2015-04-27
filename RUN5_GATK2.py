@@ -39,7 +39,7 @@ def worker(i):
     gatk = Config.get("PATHS", "gatk")
     ref = Config.get("PATHS", "reference")
     callgatk = "{0} -jar {1}".format(java, gatk)
-    tmp = Config.get("DIRECTORIES", "temp_dir")
+    # tmp = Config.get("DIRECTORIES", "temp_dir")
     inputDir = Config.get("DIRECTORIES", "output_dir")
     prefix = "{0}/{1}".format(inputDir, base)
     gatkdir = "{0}/gatk-results".format(prefix)
@@ -73,6 +73,8 @@ def worker(i):
         cmd = "{0} -T HaplotypeCaller -R {1} -I {2} -gt_mode {3} -out_mode {4} -o {5} -nct {6}".format(callgatk, ref, finput, gtmode, outmode, foutput, nThreads) 
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+
+    collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

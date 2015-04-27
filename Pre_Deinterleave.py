@@ -45,19 +45,29 @@ def worker(i):
     capt = "/1"
     cmd1 = "perl "+script+" "+P1+" "+OR+" R1 R2 "+capt+" H1s"
     print(cmd1+"\n")
-    subprocess.call(cmd1, shell=True)
     print("Being run: "+cmd1)
-
+    subprocess.call(cmd1, shell=True)
+    cmd2 = "gzip {0}".format(P1)
+    print("Zipping combined file.")
+    subprocess.call(cmd2, shell=True)
 
 if __name__ == "__main__":
     # Setup list of processes to run
-    processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # Run processes
-    for p in processes:
-        p.start()
-    # Exit the completed processes.
-    for p in processes:
-        p.join()
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+    # # Run processes
+    # for p in processes:
+    #     p.start()
+    # # Exit the completed processes.
+    # for p in processes:
+    #     p.join()
+
+    # Attempting with pool of workers.
+    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+
+    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
+    for result in results:
+        z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

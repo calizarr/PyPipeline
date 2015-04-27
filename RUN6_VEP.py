@@ -46,7 +46,6 @@ def makeCDB():
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
     
-
 def worker(i):
     mult = int(LineNo[i])
     if mult > 1:
@@ -54,6 +53,7 @@ def worker(i):
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
     base = prefix
+    GarbageCollector = []
     vep = Config.get("PATHS", "vep")
     gatkdir = Config.get("DIRECTORIES", "output_dir")+"/"+base+"/gatk-results"
     finput = gatkdir+"/"+base+".raw.snps.homo.vcf"
@@ -62,6 +62,16 @@ def worker(i):
     command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
+    GarbageCollector.append(finput)
+    print("Collecting Garbage")
+    collectTheGarbage(GarbageCollector)
+
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
     
 if __name__ == "__main__":
     # Setup list of processes to run

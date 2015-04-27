@@ -2,6 +2,14 @@
 Use the sample configurations as a guideline for your own (if tweaking.) Several viewings of the script files may be necessary.
 You will need to replace the paths to where the files will be stored.
 
+## Requirements:
+   - Python 3.4 or greater (preferably: Python 3.4)
+     * A local compile or virtual environment of Python 3.4 would be ideal.
+   - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
+     * Can be installed using local::lib and cpanm:
+       - How to install local::lib and cpanm bootstrapping (no root/sudo access): http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user
+       - Then simply do cpanm [ModuleNameHere] and install the required dependencies.
+
 ## QC and Pre Steps:
 ##### 1. Always check FastQC either after Combine/Deinterleave or after 5' Trimming, but always before 3' Trimming.
    - Always check FastQC after and before any major changes that will be made to the fastq files.

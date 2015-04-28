@@ -21,6 +21,11 @@ You will need to replace the paths to where the files will be stored.
      * http://broadinstitute.github.io/picard/
    - All other tools currently exist on infrastructure:
      * Bowtie2, fastx toolkit (fastq_quality_trimmer), and samtools.
+
+## Usage:
+   - python RUNX_ABC.py ConfigurationFile.txt
+   - Configuration Files are included. They contain paths to the directories where files, programs, etc. are located and the directories where you will be outputting results.
+   - They also contain options etc. for the general pipeline run.
    
 
 ## QC and Pre Steps:

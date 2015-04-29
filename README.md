@@ -62,7 +62,7 @@ You will need to replace the paths to where the files will be stored.
    - The Read Groups are currently dummy read groups and can be changed if one has information about flowcell, sequencer, and lane for your reads. GATK2's documentation on read groups is good for this.
    
 ##### 5. RUN5_GATK2 runs the prepped bam file through the Genome Analysis Toolkit:
-   - Targettig intervals where it might be best to realign indels.
+   - Targetting intervals where it might be best to realign indels.
    - Realigning those intervals.
    - Calling SNPS with HaplotypeCaller.
      * Currently it is set to discover snps and emit all sites whether they are high or low quality. These settings can be changed in the configuration file.

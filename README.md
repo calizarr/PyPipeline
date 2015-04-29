@@ -25,6 +25,8 @@ You will need to replace the paths to where the files will be stored.
 ## Usage:
    - python RUNX_ABC.py ConfigurationFile.txt
    - Configuration Files are included. They contain paths to the directories where files, programs, etc. are located and the directories where you will be outputting results.
+   - Please change paths, directories, etc. for local machine use as well as software and applications.
+   - To turn off options, make the value a zero (0). To turn on options, make the value a one (1).
    - They also contain options etc. for the general pipeline run.
    
 
@@ -51,7 +53,7 @@ You will need to replace the paths to where the files will be stored.
 ##### 2. RUN2_ManageFiltering_byDirectory will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans.
    - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
      * Originally on older Illumina machines the first 15 nt had a high enough error rate that it was better to trim them off.
-     * On the newest Illumina machines, the first 15 nueclotide's error rate is normally fine. Turn off 5pTrim option if undesired.
+     * On the newest Illumina machines, the first 15 nucleotides' error rate is normally fine. Turn off 5pTrim option if undesired.
    - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
    
 ##### 3. RUN3_AlignToReferences will take your filtered FastQ read pairs and align them to the Bowtie2 indices/reference genome.

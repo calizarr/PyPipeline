@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-
 use warnings;
 use strict;
 # use lib '/home/clizarraga/scripts/Pipeline/Lib';
@@ -52,22 +51,28 @@ while(1){
         chomp $H1q;
         chomp $Q1;
         if (substr($H1s,0,2) eq "--") {
-            next;
-        }
+	  next;
+	  }
         my $line = eval "$line";
         # my $count = eval "$line =~ tr/$capture//";
         foreach my $capt (@capt) {
-            my $exist = index($line, $capt);
-            if ($exist > -1) {
-                print O1 $H1s."\n".$S1."\n".$H1q."\n".$Q1."\n";
-            } else {
-                print O2 $H1s."\n".$S1."\n".$H1q."\n".$Q1."\n";
-            }
-        }   
-    }
-last if (eof(FQ1));
-$i++;
-}
+	  my $exist = index($line, $capt);
+	  if ($exist > -1) {
+	    if ($capt eq "B") {
+	        $S1 = substr($S1,0,$exist);
+		$Q1 = substr($Q1,0,$exist);
+		print O2 $H1s."\n".$S1."\n".$H1q."\n".$Q1."\n";
+	      } else {
+		print O1 $H1s."\n".$S1."\n".$H1q."\n".$Q1."\n";
+	      }
+	  } else {
+	    print O2 $H1s."\n".$S1."\n".$H1q."\n".$Q1."\n";
+	  }
+        }
+      }
+    last if (eof(FQ1));
+    $i++;
+  }
 close O1;
 close O2;
 close FQ1;

@@ -39,6 +39,10 @@ You will need to replace the paths to where the files will be stored.
    - Deinterleave is to separate a FastQ file into two separate Read 1 and Read 2 files while maintaining order.
      * Deinterleave now uses findFastq.pl in Tools, it is a perl script used to separate the Reads via capture strings.
      * Usage is specified if you just run perl findFastq.pl
+
+#### 4. Illumina 1.5 Reads:
+   - Check if your reads are between Illumina 1.3+ and Illumina 1.8. If so, check for "B" quality scores.
+     * If they exist, run QC_Illumina1.5.py and it will trim the reads from the first B onwards.
      
 ## RUN STEPS:
 ##### 1. RUN1_PrepareReferences will index your genome file.

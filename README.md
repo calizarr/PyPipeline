@@ -52,8 +52,7 @@ You will need to replace the paths to where the files will be stored.
    
 ##### 2. RUN2_ManageFiltering_byDirectory will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans.
    - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
-     * Originally on older Illumina machines the first 15 nt had a high enough error rate that it was better to trim them off.
-     * On the newest Illumina machines, the first 15 nucleotides' error rate is normally fine. Turn off 5pTrim option if undesired.
+     * Option to turn off 5pTrim option if undesired.
    - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
    
 ##### 3. RUN3_AlignToReferences will take your filtered FastQ read pairs and align them to the Bowtie2 indices/reference genome.

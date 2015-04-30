@@ -12,10 +12,10 @@ processes    = 16
 
 [PIPELINE]
 # RUN2_Filter
-FivePrimeFilter	= 1
-ThreePrimeFilter= 1
+FivePrimeFilter	= 0
+ThreePrimeFilter= 0
 PairedEnd	= 1
-Compressed	= 1
+Compressed	= 0
 # RUN4_PrepBAM
 SortSam         = 0
 MarkDups        = 1
@@ -60,21 +60,26 @@ output_dir	= /home/clizarraga/bdaccessions/Results
 temp_dir	= /home/clizarraga/bdaccessions/Temp
 reads           = /home/clizarraga/bdaccessions/Reads
 combined        = /home/clizarraga/bdaccessions/Combined
+
 [COMBINE_ACCESSIONS]
-#### Accession = Prefix for combinable accessions
-12 = Bd21Control
+### Accession = Prefix for combinable accessions
+15 = BdTR12c
+21 = Koz-3
 
 [SINGLE_ACCESSIONS]
-#### Accession = Prefix for single, quality control accessions
+### Accession = Prefix for single, quality control accessions
 
 [DATA]
 ### Number = Full Filename(s) Accession.<unknown>.<unknown>.fastq.gz
-12 = Bd21Control.1772.3.1600.fastq.gz,Bd21Control.2042.3.1728.fastq.gz
+15 = BdTR12c.1007.6.1138.fastq.gz,BdTR12c.1033.6.1150.fastq.gz,BdTR12c.1116.1.1188.fastq.gz,BdTR12c.1116.2.1188.fastq.gz,BdTR12c.1116.3.1188.fastq.gz,BdTR12c.1116.4.1188.fastq.gz
+21 = Koz-3.1007.7.1138.fastq.gz,Koz-3.1033.7.1150.fastq.gz,Koz-3.1088.1.1180.fastq.gz,Koz-3.1088.3.1180.fastq.gz,Koz-3.1088.5.1180.fastq.gz,Koz-3.1088.7.1180.fastq.gz
 
 [DATA_READS]
 ### Number = Deinterleaved Read Files. Accession.R1.fastq
-12 = Bd21Control.R1.fastq,Bd21Control.R2.fastq
+15 = BdTR12c.R1.fastq,BdTR12c.R2.fastq
+21 = Koz-3.R1.fastq,Koz-3.R2.fastq
 
 [NUMBER_MULTIPLE]
-#### Number = Number of files per accession
-12 = 2
+### Number = Number of files per accession
+15 = 6
+21 = 6

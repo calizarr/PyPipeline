@@ -37,7 +37,9 @@ def worker(i):
     base = prefix
     java = Config.get("PATHS", "java")
     picard = Config.get("PATHS", "picard")
-    callpicard = "{0} -jar {1}".format(java, picard)
+    minheap = Config.get("OPTIONS", "minheap")
+    maxheap = Config.get("OPTIONS", "maxheap")
+    callpicard = "{0} -Xms{1} -Xmx{2} -jar {3}".format(java, minheap, maxheap, picard)
     tmp = Config.get("DIRECTORIES", "temp_dir")
     inputDir = Config.get("DIRECTORIES", "output_dir")
     prefix = "{0}/{1}".format(inputDir, base)
@@ -48,8 +50,7 @@ def worker(i):
     if Config.getint("PIPELINE", "SortSam"):
         # Sorting bam with PicardTools in Coordinate Order.
         finput = "{0}/{1}.Alignments.bam".format(prefix, base)
-        foutput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)
-        
+        foutput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)        
         cmd = "{0} SortSam I={1} O={2} SO=coordinate TMP_DIR={3}".format(callpicard, finput, foutput, tmp)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
@@ -82,8 +83,8 @@ def worker(i):
         cmd = "{0} AddOrReplaceReadGroups I={1} O={2} RGID={3} RGLB={4} RGPL={5} RGPU={6} RGSM={7} CREATE_INDEX=True".format(callpicard, finput, foutput, RGID, RGLB, RGPL, RGPU, RGSM)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
-        # GarbageCollector.append(finput)
-    collectTheGarbage(GarbageCollector)
+        GarbageCollector.append(finput)
+    # collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

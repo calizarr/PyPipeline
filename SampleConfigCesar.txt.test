@@ -1,38 +1,64 @@
 [OPTIONS]
+# Threads are a standin for processes now.
 Threads		= 8
 snpRate		= 0.2
 minCov		= 1
-LengthOf5pTrim = 15
-Min3pQuality = 30
-Min3pLength  = 80
-phred        = 64
+LengthOf5pTrim  = 15
+Min3pQuality 	= 30
+Min3pLength  	= 60
+phred        	= 64
+# Number of CPUs
+processes	= 16
+# Java Memory Allocation
+# Suggested to be large for files larger than 30 gb.
+# Minimum should probably be set equal to max.
+maxheap		= 30g
+minheap		= 30g
 
 [PIPELINE]
+# RUN2_Filter
 FivePrimeFilter	= 1
 ThreePrimeFilter= 1
 PairedEnd	= 1
-Compressed	= 0
+Compressed	= 1
+# RUN4_PrepBAM
+SortSam         = 1
+MarkDups        = 1
+ReadGroups      = 1
+# RUN5_GATK2
+RealignTC       = 1
+IndelRealign    = 1
+HaplotypeCall   = 1
+[VEP]
+version		= 78
+species		= brachypodium_distachyon
+conv2GTF        = 0
+makeCDB         = 0
+callvar         = 1
+
+[GATK]
+gtmode          = DISCOVERY
+outmode         = EMIT_ALL_SITES
 
 [PATHS]
-bwa 		= /nfs4shares/bioinfosw/installs_current/bwa-0.7.10
 samtools	= /nfs4shares/bioinfosw/installs_current/samtools/samtools
 bowtie2         =  /nfs4shares/bioinfosw/installs_current/bowtie2-2.1.0/bowtie2
-delly		= /home/clizarraga/scripts/Pipeline/bin/delly_v0.5.4_parallel_linux_x86_64bit
-RunDelly	= /home/clizarraga/scripts/Pipeline/RunDelly.bestN.pl
-depthScript	= /home/clizarraga/scripts/Pipeline/GetMaxPerContig.pl
 bcftools	= /nfs4shares/bioinfosw/installs_current/samtools/bcftools/bcftools
-reference	= /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.hardmasked.fa
-FivePrimeTrimmer= /home/clizarraga/scripts/Pipeline/Lib/TrimFrontFastq.pl
+picard          = /nfs4shares/bioinfosw/installs_current/picard/dist/picard.jar
+gatk            = /home/clizarraga/usr/local/gatk/GenomeAnalysisTK.jar
+java            = /home/clizarraga/usr/bin/java8
+reference       = /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.hardmasked.Bd5.fa
+FivePrimeTrimmer= /home/clizarraga/scripts/PyPipeline/Tools/TrimFrontFastq.pl
 fastq_quality_trimmer = /nfs4shares/bioinfosw/installs_current/fastx_toolkit_0.0.13_binaries_Linux_2.6_amd64/fastq_quality_trimmer
-PairsAndOrphans = /home/clizarraga/scripts/Pipeline/Scripts/GetPairsSinglesFastqs.Illumina1.8.pl
-makedb		= /nfs4shares/bioinfosw/installs_current/ncbi-blast-2.2.30+/bin/makeblastdb
-blast		= /nfs4shares/bioinfosw/installs_current/ncbi-blast-2.2.30+
+PairsAndOrphans = /home/clizarraga/scripts/PyPipeline/Tools/GetPairsSinglesFastqs.Illumina1.8.pl
+# indices         = /shares/tmockler_share/Genomes/Brachypodium_distachyon/Brachypodium_2.1_jgi_283/assembly/Bdistachyon_283_bowtie2.hardmask
 indices         = /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.bowtie2.Bd5.hardmask
-fqscript        = /home/clizarraga/scripts/Tools/findFastq.pl
-
+fqscript        = /home/clizarraga/scripts/PyPipeline/Tools/findFastq.pl
+vep             = /home/clizarraga/usr/local/ensembl-tools-release-78/scripts/variant_effect_predictor/variant_effect_predictor.pl
+vepcache        = /home/clizarraga/usr/local/ensembl-tools-release-78/scripts/variant_effect_predictor/gtf2vep.pl
+python		= /home/clizarraga/usr/bin/python3.4
 
 [DIRECTORIES]
-reference	= /home/clizarraga/bdaccessions/Ref/Bdistachyon_283_assembly_v2.0.hardmasked.Bd5.fa
 data_dir	= /shares/tmockler_share/Data/Illumina/Brachypodium/downloads1.jgi-psf.org/downloads/Jvogel/fastq_120130/
 filtered_dir	= /home/clizarraga/bdaccessions/Data_Final
 output_dir	= /home/clizarraga/bdaccessions/Results

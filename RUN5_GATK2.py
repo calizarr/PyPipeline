@@ -38,7 +38,9 @@ def worker(i):
     java = Config.get("PATHS", "java")
     gatk = Config.get("PATHS", "gatk")
     ref = Config.get("PATHS", "reference")
-    callgatk = "{0} -jar {1}".format(java, gatk)
+    minheap = Config.get("OPTIONS", "minheap")
+    maxheap = Config.get("OPTIONS", "maxheap")
+    callgatk = "{0} -Xms{1} -Xmx{2} -jar {3}".format(java, minheap, maxheap, gatk)
     # tmp = Config.get("DIRECTORIES", "temp_dir")
     inputDir = Config.get("DIRECTORIES", "output_dir")
     prefix = "{0}/{1}".format(inputDir, base)
@@ -74,7 +76,7 @@ def worker(i):
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
 
-    collectTheGarbage(GarbageCollector)
+    # collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

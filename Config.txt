@@ -3,26 +3,31 @@
 Threads		= 8
 snpRate		= 0.2
 minCov		= 1
-LengthOf5pTrim = 15
-Min3pQuality = 30
-Min3pLength  = 60
-phred        = 64
+LengthOf5pTrim  = 15
+Min3pQuality 	= 30
+Min3pLength  	= 60
+phred        	= 64
 # Number of CPUs
-processes    = 16
+processes	= 16
+# Java Memory Allocation
+# Suggested to be large for files larger than 30 gb.
+# Minimum should probably be set equal to max.
+maxheap		= 30g
+minheap		= 30g
 
 [PIPELINE]
 # RUN2_Filter
 FivePrimeFilter	= 0
-ThreePrimeFilter= 0
+ThreePrimeFilter= 1
 PairedEnd	= 1
-Compressed	= 0
+Compressed	= 1
 # RUN4_PrepBAM
-SortSam         = 0
+SortSam         = 1
 MarkDups        = 1
 ReadGroups      = 1
 # RUN5_GATK2
-RealignTC       = 0
-IndelRealign    = 0
+RealignTC       = 1
+IndelRealign    = 1
 HaplotypeCall   = 1
 [VEP]
 version		= 78

@@ -32,6 +32,7 @@ species = Config.get("VEP", "species")
 ref = Config.get("PATHS", "reference")
 
 def convert2GTF():
+    # Unsupported for now, do manually instead.
     gff = input("Absolute path to gff")
     gtf = input("Output path for gtf")
     python = Config.get("PATHS", "python")
@@ -40,6 +41,7 @@ def convert2GTF():
     subprocess.call(command, shell=True)
 
 def makeCDB():
+    # Unsupported for now, do manually instead.
     gtf = input("Absolute path to gtf")
     build = Config.get("PATHS", "vepcache")
     command = "{0} -i {1} -f {2} -d {3} -s {4}".format(build, gtf, ref, version, species)
@@ -56,15 +58,18 @@ def worker(i):
     GarbageCollector = []
     vep = Config.get("PATHS", "vep")
     gatkdir = Config.get("DIRECTORIES", "output_dir")+"/"+base+"/gatk-results"
+    vepdir = Config.get("DIRECTORIES", "output_dir")+"/"+base+"/VEP"
+    if not os.path.exists(vepdir):
+        os.makedirs(vepdir)
     finput = gatkdir+"/"+base+".raw.snps.homo.vcf"
-    foutput = gatkdir+"/"+base+".vep.homo.vcf"
-    stats = gatkdir+"/"+base+".vep.homo.stats.html"
+    foutput = vepdir+"/"+base+".vep.homo.vcf"
+    stats = vepdir+"/"+base+".vep.homo.stats.html"
     command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
     GarbageCollector.append(finput)
     print("Collecting Garbage")
-    collectTheGarbage(GarbageCollector)
+    # collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

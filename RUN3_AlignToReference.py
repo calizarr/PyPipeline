@@ -53,8 +53,8 @@ def worker(i):
     cmd = "{0} {1}".format(Config.get("PATHS", "bowtie2"), opts)
     print("Running command:\n{0}".format(cmd))
     log = None
-    subprocess.call(cmd, shell=True, stdout=log)
-    # Making log.
+    subprocess.call(cmd, shell=True, stderr=log)
+    # Making log
     print("Making bowtie2 log")
     fdir = "{0}/{1}.bowtie2.log".format(outputDir, base)
     print("Saving to:\n{0}".format(fdir))
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
-    for result in results:
-        z = result.get()
+    # for result in results:
+    #     z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

@@ -30,7 +30,7 @@ print("Finding total number of files: {0}".format(len(LineNo)))
 def worker(i):
     # Getting paths for everything.
     DataDir = Config.get("DIRECTORIES", "reads")
-    # OutDir = Config.get("DIRECTORIES", "output_dir")
+    OutDir = Config.get("DIRECTORIES", "output_dir")
     FiltDir = Config.get("DIRECTORIES", "filtered_dir")
     mult = int(LineNo[i])
     if mult > 1:
@@ -92,7 +92,7 @@ def worker(i):
         # Always check your phred scores.
         print("Trimming 3' end on quality...\n")
         thisSet = CurrentSourcePaths[:]
-        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim.fastq" in filename]
+        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim" in filename]
         if thisSet == []:
             sys.exit("No 5pTrimmed fastq files")
         print("The current files to be used: {0}\n".format(thisSet))
@@ -116,7 +116,7 @@ def worker(i):
     if Config.getint("PIPELINE", "PairedEnd"):
         print("Parsing for Pairs..\n")
         thisSet = CurrentSourcePaths[:]
-        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim.3pTrim.fastq" in filename]
+        thisSet = [filename for filename in CurrentSourcePaths if "5pTrim.3pTrim" in filename]
         if thisSet == []:
             sys.exit("No 5pTrimmed or 3pTrimmed fastq files")
         print("What files are we working with?\n{0}\n".format(thisSet))
@@ -154,9 +154,12 @@ def worker(i):
         command = "mv {0} {1}".format(OR2, FR2)
         print("Running command:\n{0}\n".format(command))
         subprocess.call(command, shell=True)
+        command = "mv {0} {1}".format(ORO, OutDir+"/"+base+".orphan.fastq")
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
         GarbageCollector.append(OR1)
         GarbageCollector.append(OR2)
-        GarbageCollector.append(ORO)
+        # GarbageCollector.append(ORO)
         CurrentSourcePaths.append(OR1)
         CurrentSourcePaths.append(OR2)
         CurrentSourcePaths.append(ORO)

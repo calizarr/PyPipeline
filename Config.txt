@@ -12,8 +12,8 @@ processes	= 16
 # Java Memory Allocation
 # Suggested to be large for files larger than 30 gb.
 # Minimum should probably be set equal to max.
-maxheap		= 30g
-minheap		= 30g
+maxheap		= 15g
+minheap		= 15g
 
 [PIPELINE]
 # RUN2_Filter
@@ -32,8 +32,10 @@ HaplotypeCall   = 1
 [VEP]
 version		= 78
 species		= brachypodium_distachyon
+# Not functional yet don't use.
 conv2GTF        = 0
 makeCDB         = 0
+# VEP is functional.
 callvar         = 1
 
 [GATK]

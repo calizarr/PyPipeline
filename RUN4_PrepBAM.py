@@ -84,7 +84,7 @@ def worker(i):
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(finput)
-    # collectTheGarbage(GarbageCollector)
+    collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:

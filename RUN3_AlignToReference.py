@@ -52,15 +52,15 @@ def worker(i):
     opts = "-p {0} --very-sensitive --seed {1} --{2} -x {3} -1 {4} -2 {5} | {6} view -bS - > {7}".format(nThreads,seed,phred,bowRef,P1,P2,samtools,bowAln)
     cmd = "{0} {1}".format(Config.get("PATHS", "bowtie2"), opts)
     print("Running command:\n{0}".format(cmd))
-    log = None
-    subprocess.call(cmd, shell=True, stderr=log)
+    # log = None
+    subprocess.call(cmd, shell=True)
     # Making log
-    print("Making bowtie2 log")
-    fdir = "{0}/{1}.bowtie2.log".format(outputDir, base)
-    print("Saving to:\n{0}".format(fdir))
-    f = open(fdir,"w")
-    f.write(log)
-    f.close()
+    # print("Making bowtie2 log")
+    # fdir = "{0}/{1}.bowtie2.log".format(outputDir, base)
+    # print("Saving to:\n{0}".format(fdir))
+    # f = open(fdir,"w")
+    # f.write(log)
+    # f.close()
     print("Zipping read files. No longer needed.")
     cmd = "gzip {0} {1}".format(P1, P2)
     subprocess.call(cmd, shell=True)
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
-    # for result in results:
-    #     z = result.get()
+    for result in results:
+        z = result.get()
 
     print("Everything is over.")
     # results = [output.get() for p in processes]

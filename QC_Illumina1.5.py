@@ -77,6 +77,6 @@ if __name__ == "__main__":
     for result in results:
         z = result.get()
 
-    print("Everything is over.")
+    print("{0} has finished running.".format(__file__))
     # results = [output.get() for p in processes]
     # print(results)    

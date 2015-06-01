@@ -33,7 +33,6 @@ def worker(i):
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
-    # accessions = Config.get("DATA", i).split(',')
     path = Config.get("DIRECTORIES", "combined") + "/" + prefix + ".fastq.gz"
     print("Unzipping file: "+path)
     cmd = "gunzip "+path
@@ -52,23 +51,11 @@ def worker(i):
     subprocess.call(cmd2, shell=True)
 
 if __name__ == "__main__":
-    # Setup list of processes to run
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # # Run processes
-    # for p in processes:
-    #     p.start()
-    # # Exit the completed processes.
-    # for p in processes:
-    #     p.join()
-
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     for result in results:
         z = result.get()
 
-    print("Everything is over.")
-    # results = [output.get() for p in processes]
-    # print(results)
+    print("{0} has finished running.".format(__file__))

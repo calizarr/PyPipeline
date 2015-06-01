@@ -35,15 +35,10 @@ def worker(i):
         prefix = Config.get("SINGLE_ACCESSIONS", i)
     accessions = Config.get("DATA", i).split(',')
     result = Config.get("DIRECTORIES", "combined") + "/" + prefix + ".fastq.gz"
-    # cmds = []
     cmd = "cat"
-    # cmds.append('cat')
     for f in accessions:
         path = " "+Config.get("DIRECTORIES", "data_dir") + f
         cmd = cmd + path
-        # cmds.append(path)
-    # cmds.append(">")
-    # cmds.append(result)
     cmd = cmd+" > "+result
     print(cmd)
     # Insert Subprocess call here.
@@ -52,21 +47,11 @@ def worker(i):
 
 
 if __name__ == "__main__":
-    # Setup list of processes to run
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # # Run processes
-    # for p in processes:
-    #     p.start()
-    # # Exit the completed processes.
-    # for p in processes:
-    #     p.join()
-
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     for result in results:
         z = result.get()
 
-    print("Everything is over.")
+    print("{0} has finished running.".format(__file__))

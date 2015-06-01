@@ -61,9 +61,9 @@ def worker(i):
     vepdir = Config.get("DIRECTORIES", "output_dir")+"/"+base+"/VEP"
     if not os.path.exists(vepdir):
         os.makedirs(vepdir)
-    finput = gatkdir+"/"+base+".raw.snps.homo.vcf"
-    foutput = vepdir+"/"+base+".vep.homo.vcf"
-    stats = vepdir+"/"+base+".vep.homo.stats.html"
+    finput = gatkdir+"/"+base+".raw.snps.homo.Bd5.vcf"
+    foutput = vepdir+"/"+base+".vep.homo.Bd5.vcf"
+    stats = vepdir+"/"+base+".vep.homo.Bd5.stats.html"
     command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
@@ -96,6 +96,6 @@ if __name__ == "__main__":
     for result in results:
         z = result.get()
 
-    print("Everything is over.")
+    print("{0} has finished running.".format(__file__))
     # results = [output.get() for p in processes]
     # print(results)

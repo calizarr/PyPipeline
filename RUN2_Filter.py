@@ -164,7 +164,7 @@ def worker(i):
         CurrentSourcePaths.append(OR2)
         CurrentSourcePaths.append(ORO)
     # prepFinal(OutDir, CurrentSourcePaths)
-    collectTheGarbage(GarbageCollector)
+#    collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):
     for filename in files:
@@ -191,6 +191,6 @@ if __name__ == "__main__":
     for result in results:
         z = result.get()
 
-    print("Everything is over.")
+    print("{0} has finished running.".format(__file__))
     # results = [output.get() for p in processes]
     # print(results)

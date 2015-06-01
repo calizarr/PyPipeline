@@ -74,6 +74,7 @@ fastq_quality_trimmer = /nfs4shares/bioinfosw/installs_current/fastx_toolkit_0.0
 # Variant Effect Predictor Options
 vep             = /home/clizarraga/usr/local/ensembl-tools-release-78/scripts/variant_effect_predictor/variant_effect_predictor.pl
 vepcache        = /home/clizarraga/usr/local/ensembl-tools-release-78/scripts/variant_effect_predictor/gtf2vep.pl
+
 # Python to use.
 python		= /home/clizarraga/usr/bin/python3.4
 
@@ -84,13 +85,10 @@ output_dir	= /home/clizarraga/bdaccessions/Results
 temp_dir	= /home/clizarraga/bdaccessions/Temp
 reads           = /home/clizarraga/bdaccessions/Reads
 combined        = /home/clizarraga/bdaccessions/Combined
-[DIRECTORIES]
-data_dir	= /shares/tmockler_share/Data/Illumina/Brachypodium/downloads1.jgi-psf.org/downloads/Jvogel/fastq_120130/
-filtered_dir	= /home/clizarraga/bdaccessions/Data_Final
-output_dir	= /home/clizarraga/bdaccessions/Results
-temp_dir	= /home/clizarraga/bdaccessions/Temp
-reads           = /home/clizarraga/bdaccessions/Reads
-combined        = /home/clizarraga/bdaccessions/Combined
+
+[FILENAMES]
+# VEP Input Filename Extension (base.raw.snps.vcf, e.g. Bd21-0.raw.snps.vcf)
+vepvcf		= .raw.snps.vcf
 
 [COMBINE_ACCESSIONS]
 #### Accession = Prefix for combinable accessions

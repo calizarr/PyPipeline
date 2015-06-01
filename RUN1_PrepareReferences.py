@@ -45,4 +45,5 @@ def worker():
     
 if __name__=="__main__":
     worker()
+    print("="*100)
     print("{0} has finished running.".format(__file__))

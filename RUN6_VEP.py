@@ -61,9 +61,10 @@ def worker(i):
     vepdir = Config.get("DIRECTORIES", "output_dir")+"/"+base+"/VEP"
     if not os.path.exists(vepdir):
         os.makedirs(vepdir)
-    finput = gatkdir+"/"+base+".raw.snps.homo.Bd5.vcf"
-    foutput = vepdir+"/"+base+".vep.homo.Bd5.vcf"
-    stats = vepdir+"/"+base+".vep.homo.Bd5.stats.html"
+    filename = Config.get("FILENAMES", "vepvcf")
+    finput = gatkdir+"/"+base+filename
+    foutput = vepdir+"/"+base+".vep"+filename[9:-3]+"vcf"
+    stats = vepdir+"/"+base+".vep"+filename[9:-3]+".stats.html"
     command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
@@ -79,23 +80,13 @@ def collectTheGarbage(files):
     return 1
     
 if __name__ == "__main__":
-    # Setup list of processes to run
-    processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # Run processes
-    # for p in processes:
-    #     p.start()
-    # # Exit the completed processes.
-    # for p in processes:
-    #     p.join()
-
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
+
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     for result in results:
         z = result.get()
 
+    print("="*100)
     print("{0} has finished running.".format(__file__))
-    # results = [output.get() for p in processes]
-    # print(results)

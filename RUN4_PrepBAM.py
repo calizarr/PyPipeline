@@ -96,23 +96,12 @@ def collectTheGarbage(files):
 
     
 if __name__ == "__main__":
-    # Setup list of processes to run
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
-    # # Run processes
-    # for p in processes:
-    #     p.start()
-    # # Exit the completed processes.
-    # for p in processes:
-    #     p.join()
-
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    # processes = [mp.Process(target=worker,args=(i,)) for i in LineNo]
 
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     for result in results:
         z = result.get()
 
+    print("="*100)
     print("{0} has finished running.".format(__file__))
-    # results = [output.get() for p in processes]
-    # print(results)

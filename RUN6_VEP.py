@@ -64,7 +64,7 @@ def worker(i):
     filename = Config.get("FILENAMES", "vepvcf")
     finput = gatkdir+"/"+base+filename
     foutput = vepdir+"/"+base+".vep"+filename[9:-3]+"vcf"
-    stats = vepdir+"/"+base+".vep"+filename[9:-3]+".stats.html"
+    stats = vepdir+"/"+base+".vep"+filename[9:-3]+"stats.html"
     command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)

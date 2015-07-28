@@ -31,11 +31,11 @@ You will need to replace the paths to where the files will be stored.
 
 -------------------------------------------------------------------------------
 
-  - python RUNX_ABC.py ConfigurationFile.txt
-  - Configuration Files are included. They contain paths to the directories where files, programs, etc. are located and the directories where you will be outputting results.
+- python RUNX_ABC.py ConfigurationFile.txt
+- Configuration Files are included. They contain paths to the directories where files, programs, etc. are located and the directories where you will be outputting results.
   - Please change paths, directories, etc. for local machine use as well as software and applications.
   - To turn off options, make the value a zero (0). To turn on options, make the value a one (1).
-  - They also contain options etc. for the general pipeline run.
+- They also contain options etc. for the general pipeline run.
 
 ## Configuration File: ##
    
@@ -74,35 +74,35 @@ You will need to replace the paths to where the files will be stored.
 
 ##### 1. RUN1_PrepareReferences will index your genome file. #####
 
-    - Uses bowtie2-build with default parameters.
+- Uses bowtie2-build with default parameters.
    
 ##### 2. RUN2_ManageFiltering_byDirectory will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans. #####
 
-    - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
-      * Option to turn off 5pTrim option if undesired.
-    - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
+  - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
+    * Option to turn off 5pTrim option if undesired.
+  - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
    
 ##### 3. RUN3_AlignToReferences will take your filtered FastQ read pairs and align them to the Bowtie2 indices/reference genome. #####
 
-    - Using the output from RUN1 of the indexed reference from Bowtie2, use Bowtie2 to align the references.
-    - Final step with Reads, from here on out only the BAM file. Reads will be gzipped automatically.
-    - Bowtie2 in here is set to very sensitive so it takes longer but is more accurate.
+  - Using the output from RUN1 of the indexed reference from Bowtie2, use Bowtie2 to align the references.
+  - Final step with Reads, from here on out only the BAM file. Reads will be gzipped automatically.
+  - Bowtie2 in here is set to very sensitive so it takes longer but is more accurate.
    
 ##### 4. RUN4_PrepBAM takes the alignment BAM, sorts it, replaces duplicates, and adds/replaces read groups. #####
 
-    - The Read Groups are currently dummy read groups and can be changed if one has information about flowcell, sequencer, and lane for your reads. GATK2's documentation on read groups is good for this.
+  - The Read Groups are currently dummy read groups and can be changed if one has information about flowcell, sequencer, and lane for your reads. GATK2's documentation on read groups is good for this.
    
 ##### 5. RUN5_GATK2 runs the prepped bam file through the Genome Analysis Toolkit: #####
 
-    - Targetting intervals where it might be best to realign indels.
-    - Realigning those intervals.
-    - Calling SNPS with HaplotypeCaller.
-      * Currently it is set to discover snps and emit all sites whether they are high or low quality. These settings can be changed in the configuration file.
+  - Targetting intervals where it might be best to realign indels.
+  - Realigning those intervals.
+  - Calling SNPS with HaplotypeCaller.
+    * Currently it is set to discover snps and emit all sites whether they are high or low quality. These settings can be changed in the configuration file.
      
 ##### 6. RUN6_VEP will take the vcf and call possible effects of SNPs on those sites. #####
 
-    - The functions to make the cache database and convert to gtf are preliminary and only work for certain files. It is not recommended to use them. The configuration file has their options set to 0 for that reason.
-    - If using a species that does not exist in the database, you will have to create your own cache database from a gtf file. The creation of the database is a straight VEP perl script, however, converting from gff to gtf is not so straightforward.
+  - The functions to make the cache database and convert to gtf are preliminary and only work for certain files. It is not recommended to use them. The configuration file has their options set to 0 for that reason.
+  - If using a species that does not exist in the database, you will have to create your own cache database from a gtf file. The creation of the database is a straight VEP perl script, however, converting from gff to gtf is not so straightforward.
 
 -------------------------------------------------------------------------------
 

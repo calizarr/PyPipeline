@@ -9,27 +9,23 @@ You will need to replace the paths to where the files will be stored.
 
 -------------------------------------------------------------------------------
 - Python 3.4 or greater (preferably: Python 3.4)
-
-
-
-- Python 3.4 or greater (preferably: Python 3.4)
-    * A local compile or virtual environment of Python 3.4 would be ideal.
-    * https://www.python.org/download/releases/3.4.0/
-  - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
-    * Can be installed using local::lib and cpanm:
-      - How to install local::lib and cpanm bootstrapping (no root/sudo access): http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user
-      - Then simply do cpanm [ModuleNameHere] and install the required dependencies.
-    * http://www.perl.org/
-  - Java 7 (or greater):
-    * https://java.com/en/download/
-  - Variant Effect Predictor:
-    * http://useast.ensembl.org/info/docs/tools/vep/script/vep_download.html?redirect=no
-  - Genome Analysis Toolkit 2:
-    * https://www.broadinstitute.org/gatk/download/
-  - PicardTools:
-    * http://broadinstitute.github.io/picard/
-  - All other tools currently exist on infrastructure:
-    * Bowtie2, fastx toolkit (fastq_quality_trimmer), and samtools.
+    - A local compile or virtual environment of Python 3.4 would be ideal.
+    - [Download Python 3.4](https://www.python.org/download/releases/3.4.0/)
+- Perl 5.10 and dependencies for Variant Effect Predictor scripts.
+    - Can be installed using local::lib and cpanm:
+        - [How to install local::lib and cpanm bootstrapping (no root/sudo access)](http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user)
+    - Then simply do cpanm [ModuleNameHere] and install the required dependencies.
+    - [Download Perl](http://www.perl.org/)
+- Java 7 (or greater):
+    - [Download Java](https://java.com/en/download/)
+- Variant Effect Predictor:
+    - [Download VEP](http://useast.ensembl.org/info/docs/tools/vep/script/vep_download.html?redirect=no)
+- Genome Analysis Toolkit 2:
+    - [Download GATK2](https://www.broadinstitute.org/gatk/download/)
+- PicardTools:
+    - [Download PicardTools](http://broadinstitute.github.io/picard/)
+    - All other tools currently exist on infrastructure:
+        - Bowtie2, fastx toolkit (fastq_quality_trimmer), and samtools.
 
 ## Usage: ##
 

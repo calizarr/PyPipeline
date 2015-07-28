@@ -5,6 +5,8 @@ You will need to replace the paths to where the files will be stored.
 
 ## Requirements: ##
 
+-------------------------------------------------------------------------------
+
   - Python 3.4 or greater (preferably: Python 3.4)
     * A local compile or virtual environment of Python 3.4 would be ideal.
     * https://www.python.org/download/releases/3.4.0/
@@ -26,6 +28,8 @@ You will need to replace the paths to where the files will be stored.
 
 ## Usage: ##
 
+-------------------------------------------------------------------------------
+
   - python RUNX_ABC.py ConfigurationFile.txt
   - Configuration Files are included. They contain paths to the directories where files, programs, etc. are located and the directories where you will be outputting results.
   - Please change paths, directories, etc. for local machine use as well as software and applications.
@@ -34,8 +38,11 @@ You will need to replace the paths to where the files will be stored.
 
 ## Configuration File: ##
    
+-------------------------------------------------------------------------------
 
 ## QC and Pre Steps: ##
+
+-------------------------------------------------------------------------------
 
 ##### 1. Always check FastQC either after Combine/Deinterleave or after 5' Trimming, but always before 3' Trimming. #####
 
@@ -56,6 +63,8 @@ You will need to replace the paths to where the files will be stored.
     * If they exist, run QC_Illumina1.5.py and it will trim the reads from the first B onwards.
      
 ## RUN STEPS: ##
+
+-------------------------------------------------------------------------------
 
 ##### 1. RUN1_PrepareReferences will index your genome file. #####
 
@@ -91,6 +100,7 @@ You will need to replace the paths to where the files will be stored.
   - The functions to make the cache database and convert to gtf are preliminary and only work for certain files. It is not recommended to use them. The configuration file has their options set to 0 for that reason.
   - If using a species that does not exist in the database, you will have to create your own cache database from a gtf file. The creation of the database is a straight VEP perl script, however, converting from gff to gtf is not so straightforward.
 
+-------------------------------------------------------------------------------
 
 Notes:
   - If the Pipeline is run with several accessions there can only be one overall minimum quality score and length. If your reads differ significantly, make two configuration files (or more) for the reads that can't be filtered the same way.

@@ -20,6 +20,7 @@ You will need to replace the paths to where the files will be stored.
     - [Download Java](https://java.com/en/download/)
 - Variant Effect Predictor:
     - [Download VEP](http://useast.ensembl.org/info/docs/tools/vep/script/vep_download.html?redirect=no)
+    - Only works with VEP v78. 79+ do not work with the infrastructure and freeze.
 - Genome Analysis Toolkit 2:
     - [Download GATK2](https://www.broadinstitute.org/gatk/download/)
 - PicardTools:

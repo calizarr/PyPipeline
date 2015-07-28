@@ -8,8 +8,11 @@ You will need to replace the paths to where the files will be stored.
 ## Requirements: ##
 
 -------------------------------------------------------------------------------
+- Python 3.4 or greater (preferably: Python 3.4)
 
-  - Python 3.4 or greater (preferably: Python 3.4)
+
+
+- Python 3.4 or greater (preferably: Python 3.4)
     * A local compile or virtual environment of Python 3.4 would be ideal.
     * https://www.python.org/download/releases/3.4.0/
   - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
@@ -41,6 +44,11 @@ You will need to replace the paths to where the files will be stored.
 ## Configuration File: ##
    
 -------------------------------------------------------------------------------
+
+  * Processes/Threads are the essentially the same. Python uses multiprocessing.
+  * VEP makeCDB doesn't work for now. 78 only takes gtf.
+  * Java maxheap and minheap parameters are supremely important. They determine how many accessions can run at once.
+    * About a 1/3 of RAM is fine for maxheap and a little more than 1/2 of maxheap for minheap.
 
 ## QC and Pre Steps: ##
 

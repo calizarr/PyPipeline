@@ -44,12 +44,20 @@ def worker(i):
     bowRef = Config.get("PATHS", "indices")
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
+    # Moving orphan files to read specific folder.
+    orphan = "{0}/{1}.orphan.fastq".format(Config.get("DIRECTORIES", "output_dir"), base)
+    neworphan = os.path.join(outputDir, os.path.basename(orphan))
+    cmd  = "mv {0} {1}".format(orphan, neworphan)
+    print("Running commands: \n{0}".format(cmd))
+    subprocess.call(cmd, shell=True)
+    # Orphan has been moved to base specific results folder.
     # Final Bowtie2 Alignment file.
     bowAln = "{0}.bam".format(bowRoot)
     phred = "phred{0}".format(Config.get("OPTIONS", "phred"))
     seed = "0821986"
     # {0} Threads {1} Seed Num {2} phred {3} indices {4} Read 1 {5} Read 2 {6} samtools {7} filename
     opts = "-p {0} --very-sensitive --seed {1} --{2} -x {3} -1 {4} -2 {5} | {6} view -bS - > {7}".format(nThreads,seed,phred,bowRef,P1,P2,samtools,bowAln)
+    # opts = "-p {0} --very-sensitive --{1} -x {2} -0 {3} -1 {4} | {5} view -bS - > {6}".format(nThreads,phred,bowRef,P1,P2,samtools,bowAln)    
     cmd = "{0} {1}".format(Config.get("PATHS", "bowtie2"), opts)
     print("Running command:\n{0}".format(cmd))
     fdir = "{0}/{1}.bowtie2.log".format(outputDir, base)

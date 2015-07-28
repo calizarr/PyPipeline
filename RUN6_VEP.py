@@ -30,6 +30,7 @@ print("Finding total number of files: {0}".format(len(LineNo)))
 version = Config.get("VEP", "version")
 species = Config.get("VEP", "species")
 ref = Config.get("PATHS", "reference")
+cdbmake = Config.getint("VEP", "makeCDB")
 
 def convert2GTF():
     # Unsupported for now, do manually instead.
@@ -41,10 +42,9 @@ def convert2GTF():
     subprocess.call(command, shell=True)
 
 def makeCDB():
-    # Unsupported for now, do manually instead.
-    gtf = input("Absolute path to gtf")
+    gff = Config.get("PATHS", "vepgtf")
     build = Config.get("PATHS", "vepcache")
-    command = "{0} -i {1} -f {2} -d {3} -s {4}".format(build, gtf, ref, version, species)
+    command = "perl {0} -i {1} -f {2} -d {3} -s {4}".format(build, gff, ref, version, species)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
     
@@ -62,10 +62,20 @@ def worker(i):
     if not os.path.exists(vepdir):
         os.makedirs(vepdir)
     filename = Config.get("FILENAMES", "vepvcf")
+    fileout = Config.get("FILENAMES", "vepoutvcf")
     finput = gatkdir+"/"+base+filename
-    foutput = vepdir+"/"+base+".vep"+filename[9:-3]+"vcf"
-    stats = vepdir+"/"+base+".vep"+filename[9:-3]+"stats.html"
-    command = "perl {0} -v -fork {1} -offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf".format(vep, nThreads, species, finput, foutput, stats, version, ref)
+    if Config.getint("VEP", "filter"):
+        filtertype = Config.get("VEP", "type")
+        bcftools = Config.get("PATHS", "bcftools")
+        fout = gatkdir+"/"+base+filename[:-3]+"hom.vcf"
+        cmd = "{0} view -g {1} {2} -O v -o {3}".format(bcftools, filtertype, finput, fout)
+        print("Running commmand:\n{0}".format(cmd))
+        subprocess.call(cmd, shell=True)
+        fileout = fileout+"hom."
+        finput = fout
+    foutput = vepdir+"/"+base+fileout+"vcf"
+    stats = vepdir+"/"+base+fileout+"stats.html"
+    command = "perl {0} --verbose --fork {1} --offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf --force_overwrite".format(vep, nThreads, species, finput, foutput, stats, version, ref)
     print("Running commmand:\n{0}".format(command))    
     subprocess.call(command, shell=True)
     GarbageCollector.append(finput)
@@ -80,13 +90,20 @@ def collectTheGarbage(files):
     return 1
     
 if __name__ == "__main__":
+    
+    if cdbmake:
+        makeCDB()
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
 
-
+    # for i in LineNo:
+    #     worker(i)
+    #     print("="*200)
+    #     print("{0} has finished running.".format(Config.get("NAMES", i)))
+    #     print("="*200)
     results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     for result in results:
         z = result.get()
-
-    print("="*100)
+        
+    print("="*200)
     print("{0} has finished running.".format(__file__))

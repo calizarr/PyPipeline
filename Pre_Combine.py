@@ -40,11 +40,12 @@ def worker(i):
         path = " "+Config.get("DIRECTORIES", "data_dir") + f
         cmd = cmd + path
     cmd = cmd+" > "+result
-    print(cmd)
     # Insert Subprocess call here.
-    output.put(subprocess.call(cmd, shell=True))
-    print("Command is run and files should be in their proper places.\n")
-
+    if not os.path.exists(result):
+        print("Running command:\n{0}".format(cmd))
+        output.put(subprocess.call(cmd, shell=True))
+    else:
+        print("Combined fastq: {0} already exists.".format(result))
 
 if __name__ == "__main__":
     # Attempting with pool of workers.

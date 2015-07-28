@@ -1,5 +1,7 @@
 # SNP Calling Pipeline Information: #
 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 Use the sample configurations as a guideline for your own (if tweaking.) Several viewings of the script files may be necessary.
 You will need to replace the paths to where the files will be stored.
 

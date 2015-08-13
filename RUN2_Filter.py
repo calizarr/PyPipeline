@@ -163,7 +163,6 @@ def worker(i):
         CurrentSourcePaths.append(OR1)
         CurrentSourcePaths.append(OR2)
         CurrentSourcePaths.append(ORO)
-    # prepFinal(OutDir, CurrentSourcePaths)
 #    collectTheGarbage(GarbageCollector)
 
 def collectTheGarbage(files):

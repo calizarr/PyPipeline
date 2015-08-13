@@ -83,8 +83,8 @@ def worker(i):
         RGPL = "Illumina"
         # Read Group PU
         RGPU = "blah"
-        # Read Group EH?
-        RGSM = "JGI"
+        # Read Group Sample (in this case accession name)
+        RGSM = base
         foutput = "{0}/{1}.PicardSorted.DeDupped.RG.bam".format(gatkdir, base)
         cmd = "{0} AddOrReplaceReadGroups I={1} O={2} RGID={3} RGLB={4} RGPL={5} RGPU={6} RGSM={7} TMP_DIR={8} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT".format(callpicard, finput, foutput, RGID, RGLB, RGPL, RGPU, RGSM, tmp)
         print("Running commmand:\n{0}".format(cmd))

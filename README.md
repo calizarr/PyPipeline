@@ -77,12 +77,13 @@ You will need to replace the paths to where the files will be stored.
 
 - Uses bowtie2-build with default parameters.
    
-##### 2. RUN2_ManageFiltering_byDirectory will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans. #####
+##### 2. RUN2_Filter will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans. #####
 
   - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
     * Option to turn off 5pTrim option if undesired.
   - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
-   
+  - RUN2_Filter_Trimmomatic.py does the same thing, but is much faster and multithreaded.
+ 
 ##### 3. RUN3_AlignToReferences will take your filtered FastQ read pairs and align them to the Bowtie2 indices/reference genome. #####
 
   - Using the output from RUN1 of the indexed reference from Bowtie2, use Bowtie2 to align the references.

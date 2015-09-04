@@ -1,4 +1,5 @@
 #!/home/clizarraga/usr/python/bin/bin/python3.4
+from __future__ import print_function
 import sys
 import subprocess
 
@@ -6,14 +7,19 @@ import subprocess
 import os
 bindir = os.path.abspath(os.path.dirname(__file__))
 
-# Python 3.4 Configuration Parser
-import configparser
+# Python Choose ConfigParser Based On Version
+if sys.version_info[0] < 3:
+    import ConfigParser
+    Config = ConfigParser.ConfigParser()
+else:
+    import configparser
+    Config = configparser.ConfigParser()
+
 
 # Reading configuration file.
 if len(sys.argv)==1:
     sys.exit("usage: py3 {0}  <Config file>\n".format(__file__))
 
-Config = configparser.ConfigParser()
 Config.read(sys.argv[1])
 
 ref = Config.get("PATHS","reference")

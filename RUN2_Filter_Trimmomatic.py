@@ -1,12 +1,19 @@
 #!/home/clizarraga/usr/python/bin/bin/python3.4
+from __future__ import print_function
 import sys
 import subprocess
+
 # Equivalent to Perl's FindBin...sorta
 import os
 bindir = os.path.abspath(os.path.dirname(__file__))
 
-# Python 3.4 Configuration Parser
-import configparser
+# Python Choose ConfigParser Based On Version
+if sys.version_info[0] < 3:
+    import ConfigParser
+    Config = ConfigParser.ConfigParser()
+else:
+    import configparser
+    Config = configparser.ConfigParser()
 
 # Multi processing begins.
 import multiprocessing as mp
@@ -16,7 +23,6 @@ output = mp.Queue()
 if len(sys.argv)==1:
     sys.exit("usage: py3 {0}  <Config file>\n".format(__file__))
 
-Config = configparser.ConfigParser()
 Config.read(sys.argv[1])
 nThreads = Config.get("OPTIONS", "Threads")
 
@@ -92,8 +98,9 @@ def worker(i):
         calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}".format(java, minheap, maxheap, trim)
         cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}".format(calltrimmomatic, nThreads, phred, log, read1, read2, out1, orphan1, out2, orphan2, length, minqual, minlength)
         print("Running commmand:\n{0}".format(cmd))
-        # subprocess.call(cmd, shell=True)
+        subprocess.call(cmd, shell=True)
 
+        # Moving files to appropriate folders.
         FR1 = os.path.join(FiltDir, "{0}.R1.fastq".format(base))
         FR2 = os.path.join(FiltDir, "{0}.R2.fastq".format(base))
         ORO = os.path.join(FiltDir, "Orphans")

@@ -11,6 +11,7 @@ You will need to replace the paths to where the files will be stored.
 - Python 3.4 or greater (preferably: Python 3.4)
     - A local compile or virtual environment of Python 3.4 would be ideal.
     - [Download Python 3.4](https://www.python.org/download/releases/3.4.0/)
+- Python 2.6/2.7 should be compatible at this point.
 - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
     - Can be installed using local::lib and cpanm:
         - [How to install local::lib and cpanm bootstrapping (no root/sudo access)](http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user)

@@ -21,7 +21,7 @@ import multiprocessing as mp
 output = mp.Queue()
 
 # Reading configuration file.
-if len(sys.argv)==1:
+if len(sys.argv) == 1:
     sys.exit("usage: py3 {0}  <Config file>\n".format(__file__))
 
 Config.read(sys.argv[1])
@@ -29,10 +29,11 @@ nThreads = Config.get("OPTIONS", "Threads")
 
 print("Recognizing {0} as max threading...".format(nThreads))
 
-ref = Config.get("PATHS","reference")
+ref = Config.get("PATHS", "reference")
 LineNo = dict(Config.items('NUMBER_MULTIPLE'))
 print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
+
 
 def worker(i):
     try:
@@ -49,7 +50,8 @@ def worker(i):
     picard = Config.get("PATHS", "picard")
     minheap = Config.get("OPTIONS", "minheap")
     maxheap = Config.get("OPTIONS", "maxheap")
-    callpicard = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}".format(java, minheap, maxheap, picard)
+    callpicard = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
+                 .format(java, minheap, maxheap, picard)
     tmp = Config.get("DIRECTORIES", "temp_dir")
     inputDir = Config.get("DIRECTORIES", "output_dir")
     prefix = "{0}/{1}".format(inputDir, base)
@@ -60,8 +62,9 @@ def worker(i):
     if Config.getint("PIPELINE", "SortSam"):
         # Sorting bam with PicardTools in Coordinate Order.
         finput = "{0}/{1}.Alignments.bam".format(prefix, base)
-        foutput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)        
-        cmd = "{0} SortSam I={1} O={2} SO=coordinate TMP_DIR={3} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT".format(callpicard, finput, foutput, tmp)
+        foutput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)
+        cmd = "{0} SortSam I={1} O={2} SO=coordinate TMP_DIR={3} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT" \
+              .format(callpicard, finput, foutput, tmp)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(finput)
@@ -71,9 +74,12 @@ def worker(i):
         finput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)
         foutput = "{0}/{1}.PicardSorted.DeDupped.bam".format(gatkdir, base)
         metrics = "{0}/{1}.metrics".format(gatkdir, base)
-        file_handles = int(subprocess.check_output("ulimit -n", shell=True))-100
-        max_file_handles = "MAX_FILE_HANDLES_FOR_READ_ENDS_MAP={0}".format(file_handles)
-        cmd = "{0} MarkDuplicates I={1} O={2} METRICS_FILE={3} TMP_DIR={4} ASSUME_SORTED=true VALIDATION_STRINGENCY=SILENT SORTING_COLLECTION_SIZE_RATIO=.35 {5}".format(callpicard, finput, foutput, metrics, tmp, max_file_handles)
+        file_handles = int(subprocess.check_output(
+            "ulimit -n", shell=True)) - 100
+        max_file_handles = "MAX_FILE_HANDLES_FOR_READ_ENDS_MAP={0}" \
+                           .format(file_handles)
+        cmd = "{0} MarkDuplicates I={1} O={2} METRICS_FILE={3} TMP_DIR={4} ASSUME_SORTED=true VALIDATION_STRINGENCY=SILENT SORTING_COLLECTION_SIZE_RATIO=.35 {5}" \
+              .format(callpicard, finput, foutput, metrics, tmp, max_file_handles)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(finput)
@@ -92,19 +98,22 @@ def worker(i):
         # Read Group Sample (in this case accession name)
         RGSM = base
         foutput = "{0}/{1}.PicardSorted.DeDupped.RG.bam".format(gatkdir, base)
-        cmd = "{0} AddOrReplaceReadGroups I={1} O={2} RGID={3} RGLB={4} RGPL={5} RGPU={6} RGSM={7} TMP_DIR={8} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT".format(callpicard, finput, foutput, RGID, RGLB, RGPL, RGPU, RGSM, tmp)
+        cmd = "{0} AddOrReplaceReadGroups I={1} O={2} RGID={3} RGLB={4} RGPL={5} RGPU={6} RGSM={7} TMP_DIR={8} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT" \
+              .format(callpicard, finput, foutput, RGID, RGLB, RGPL, RGPU, RGSM, tmp)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(finput)
 
-    # collectTheGarbage(GarbageCollector)
+     # collectTheGarbage(GarbageCollector)
 
+    
 def collectTheGarbage(files):
     for filename in files:
         command = "rm -rf {0}".format(filename)
         print("Running command:\n{0}\n".format(command))
         subprocess.call(command, shell=True)
     return 1
+
 
 def grouper(iterable, n, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
@@ -115,7 +124,8 @@ def grouper(iterable, n, fillvalue=None):
 if __name__ == "__main__":
     # Attempting with pool of workers.
     # Getting total memory of machine
-    meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
+    meminfo = dict((i.split()[0].rstrip(':'), int(i.split()[1]))
+                   for i in open('/proc/meminfo').readlines())
     mem_total_kib = meminfo['MemTotal']
     mem_total_gib = mem_total_kib*1.0e-6
     # Getting number of total processes that can be run at once given memory constraints.
@@ -126,7 +136,7 @@ if __name__ == "__main__":
     # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
     pool = mp.Pool(processes=at_once)
     for group in total:
-        results = [pool.apply_async( func=worker, args=(i, ) ) for i in group]
+        results = [pool.apply_async(func=worker, args=(i, )) for i in group]
         for result in results:
             z = result.get()
         print("="*100)

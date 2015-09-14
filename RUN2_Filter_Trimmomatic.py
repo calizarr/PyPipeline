@@ -2,6 +2,7 @@
 from __future__ import print_function
 import sys
 import subprocess
+import itertools
 
 # Equivalent to Perl's FindBin...sorta
 import os
@@ -11,6 +12,7 @@ bindir = os.path.abspath(os.path.dirname(__file__))
 if sys.version_info[0] < 3:
     import ConfigParser
     Config = ConfigParser.ConfigParser()
+    itertools.zip_longest = itertools.izip_longest
 else:
     import configparser
     Config = configparser.ConfigParser()
@@ -20,7 +22,7 @@ import multiprocessing as mp
 output = mp.Queue()
 
 # Reading configuration file.
-if len(sys.argv)==1:
+if len(sys.argv) == 1:
     sys.exit("usage: py3 {0}  <Config file>\n".format(__file__))
 
 Config.read(sys.argv[1])
@@ -28,15 +30,16 @@ nThreads = Config.get("OPTIONS", "Threads")
 
 print("Recognizing {0} as max threading...".format(nThreads))
 
-ref = Config.get("PATHS","reference")
+ref = Config.get("PATHS", "reference")
 LineNo = dict(Config.items('NUMBER_MULTIPLE'))
 print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
 
+
 def worker(i):
     # Getting paths for everything.
     DataDir = Config.get("DIRECTORIES", "reads")
-    OutDir = Config.get("DIRECTORIES", "output_dir")
+    # OutDir = Config.get("DIRECTORIES", "output_dir")
     FiltDir = Config.get("DIRECTORIES", "filtered_dir")
     mult = int(LineNo[i])
     # Getting Trimmomatic Configs.
@@ -52,7 +55,7 @@ def worker(i):
         base = Config.get("SINGLE_ACCESSIONS", i)
     # Lists to hold paths and garbage to be collected.
     CurrentSourcePaths = []
-    GarbageCollector = []
+    # GarbageCollector = []
     directory = DataDir
     print("Working with {0}".format(directory))
     # Attempting to get the read files.
@@ -83,20 +86,27 @@ def worker(i):
             else:
                 CurrentSourcePaths.append(filename)
 
-    if Config.getint("PIPELINE", "FivePrimeFilter") and Config.getint("PIPELINE", "ThreePrimeFilter") and Config.getint("PIPELINE", "PairedEnd"):
+    if Config.getint("PIPELINE", "FivePrimeFilter") \
+       and Config.getint("PIPELINE", "ThreePrimeFilter") \
+       and Config.getint("PIPELINE", "PairedEnd"):
         basedir = os.path.dirname(CurrentSourcePaths[0])
         log = os.path.join(basedir, "{0}.trimlog".format(base))
         read1 = CurrentSourcePaths[0]
         read2 = CurrentSourcePaths[1]
-        out1 = os.path.join(basedir, "{0}.R1.3pTrim.5pTrim.Paired.fastq".format(base))
-        out2 = os.path.join(basedir, "{0}.R2.3pTrim.5pTrim.Paired.fastq".format(base))
+        out1 = os.path.join(basedir, "{0}.R1.3pTrim.5pTrim.Paired.fastq"
+                            .format(base))
+        out2 = os.path.join(basedir, "{0}.R2.3pTrim.5pTrim.Paired.fastq"
+                            .format(base))
         orphan1 = os.path.join(basedir, "{0}.R1.orphan".format(base))
         orphan2 = os.path.join(basedir, "{0}.R2.orphan".format(base))
         length = Config.get("OPTIONS", "LengthOf5pTrim")
         minqual = Config.get("OPTIONS", "Min3pQuality")
         minlength = Config.get("OPTIONS", "Min3pLength")
-        calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}".format(java, minheap, maxheap, trim)
-        cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}".format(calltrimmomatic, nThreads, phred, log, read1, read2, out1, orphan1, out2, orphan2, length, minqual, minlength)
+        calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
+                          .format(java, minheap, maxheap, trim)
+        cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}" \
+              .format(calltrimmomatic, nThreads, phred, log, read1, read2,
+                      out1, orphan1, out2, orphan2, length, minqual, minlength)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
 
@@ -123,22 +133,54 @@ def worker(i):
             os.makedirs(LOGS)
         cmd = "mv {0} {1}".format(log, LOGS)
         print("Running commmand:\n{0}".format(cmd))
-        subprocess.call(cmd, shell=True)    
-        
+        subprocess.call(cmd, shell=True)
+
+
 def collectTheGarbage(files):
     for filename in files:
-        command  = "rm -rf {0}".format(filename)
+        command = "rm -rf {0}".format(filename)
         print("Running command:\n{0}\n".format(command))
         subprocess.call(command, shell=True)
     return 1
 
+# if __name__ == "__main__":
+#     # Attempting with pool of workers.
+#     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+
+#     results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
+#     for result in results:
+#         z = result.get()
+
+#     print("="*100)
+#     print("{0} has finished running.".format(__file__))
+
+
+def grouper(iterable, n, fillvalue=None):
+    "Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
+    args = [iter(iterable)] * n
+    return itertools.zip_longest(fillvalue=fillvalue, *args)
+
 if __name__ == "__main__":
     # Attempting with pool of workers.
-    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # Getting total memory of machine
+    meminfo = dict((i.split()[0].rstrip(':'), int(i.split()[1]))
+                   for i in open('/proc/meminfo').readlines())
+    mem_total_kib = meminfo['MemTotal']
+    mem_total_gib = mem_total_kib*1.0e-6
+    # Getting number of total processes that can be run at once given memory constraints.
+    memper = int(Config.get("OPTIONS", "maxheap")[:-1])
+    at_once = int(mem_total_gib//memper)
+    print("This is the total number allowed at once: {0}".format(at_once))
+    total = grouper(LineNo.keys(), at_once)
+    # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    pool = mp.Pool(processes=at_once)
+    for group in total:
+        results = [pool.apply_async(func=worker, args=(i, )) for i in group]
+        for result in results:
+            z = result.get()
+        print("="*100)
+        print("{0} has finished running.".format(str(group)))
 
-    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
-    for result in results:
-        z = result.get()
-
-    print("="*100)
+    print("="*200)
     print("{0} has finished running.".format(__file__))

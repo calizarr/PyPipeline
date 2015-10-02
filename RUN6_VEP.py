@@ -19,7 +19,7 @@ import multiprocessing as mp
 output = mp.Queue()
 
 # Reading configuration file.
-if len(sys.argv)==1:
+if len(sys.argv) == 1:
     sys.exit("usage: py3 {0}  <Config file>\n".format(__file__))
 
 Config.read(sys.argv[1])
@@ -27,7 +27,7 @@ nThreads = Config.get("OPTIONS", "Threads")
 
 print("Recognizing {0} as max threading...".format(nThreads))
 
-ref = Config.get("PATHS","reference")
+ref = Config.get("PATHS", "reference")
 LineNo = dict(Config.items('NUMBER_MULTIPLE'))
 print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
@@ -36,6 +36,7 @@ version = Config.get("VEP", "version")
 species = Config.get("VEP", "species")
 ref = Config.get("PATHS", "reference")
 cdbmake = Config.getint("VEP", "makeCDB")
+
 
 def convert2GTF():
     # Unsupported for now, do manually instead.
@@ -46,13 +47,15 @@ def convert2GTF():
     print("Running commmand:\n{0}".format(command))
     subprocess.call(command, shell=True)
 
+    
 def makeCDB():
     gff = Config.get("PATHS", "vepgtf")
     build = Config.get("PATHS", "vepcache")
     command = "perl {0} -i {1} -f {2} -d {3} -s {4}".format(build, gff, ref, version, species)
-    print("Running commmand:\n{0}".format(command))    
+    print("Running commmand:\n{0}".format(command))
     subprocess.call(command, shell=True)
-    
+
+
 def worker(i):
     mult = int(LineNo[i])
     if mult > 1:
@@ -80,12 +83,14 @@ def worker(i):
         finput = fout
     foutput = vepdir+"/"+base+fileout+"vcf"
     stats = vepdir+"/"+base+fileout+"stats.html"
-    command = "perl {0} --verbose --fork {1} --offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf --force_overwrite".format(vep, nThreads, species, finput, foutput, stats, version, ref)
-    print("Running commmand:\n{0}".format(command))    
+    command = "perl {0} --verbose --fork {1} --offline --species {2} -i {3} -o {4} --stats_file {5} --cache --cache_version {6} --fasta {7} --vcf --force_overwrite" \
+              .format(vep, nThreads, species, finput, foutput, stats, version, ref)
+    print("Running commmand:\n{0}".format(command))
     subprocess.call(command, shell=True)
     GarbageCollector.append(finput)
     print("Collecting Garbage")
     # collectTheGarbage(GarbageCollector)
+
 
 def collectTheGarbage(files):
     for filename in files:
@@ -106,7 +111,7 @@ if __name__ == "__main__":
     #     print("="*200)
     #     print("{0} has finished running.".format(Config.get("NAMES", i)))
     #     print("="*200)
-    results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
+    results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
     for result in results:
         z = result.get()
         

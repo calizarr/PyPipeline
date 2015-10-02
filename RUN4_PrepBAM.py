@@ -12,6 +12,7 @@ bindir = os.path.abspath(os.path.dirname(__file__))
 if sys.version_info[0] < 3:
     import ConfigParser
     Config = ConfigParser.ConfigParser()
+    itertools.zip_longest = itertools.izip_longest
 else:
     import configparser
     Config = configparser.ConfigParser()
@@ -104,7 +105,7 @@ def worker(i):
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(finput)
 
-     # collectTheGarbage(GarbageCollector)
+    # collectTheGarbage(GarbageCollector)
 
     
 def collectTheGarbage(files):

@@ -3,6 +3,8 @@ from __future__ import print_function
 import sys
 import subprocess
 import itertools
+import glob
+import pdb
 
 # Equivalent to Perl's FindBin...sorta
 import os
@@ -68,6 +70,7 @@ def worker(i):
     for filename in DIR:
         if base in filename:
             CurrentFiles.append(directory+"/"+filename)
+    CurrentFiles.sort()
     # Read files should've been acquired.
     print("These are the files we have acquired:\n{0}".format(CurrentFiles))
     CurrentSourcePaths = CurrentFiles[:]
@@ -89,6 +92,7 @@ def worker(i):
     if Config.getint("PIPELINE", "FivePrimeFilter") \
        and Config.getint("PIPELINE", "ThreePrimeFilter") \
        and Config.getint("PIPELINE", "PairedEnd"):
+        # pdb.set_trace()
         basedir = os.path.dirname(CurrentSourcePaths[0])
         log = os.path.join(basedir, "{0}.trimlog".format(base))
         read1 = CurrentSourcePaths[0]
@@ -101,7 +105,27 @@ def worker(i):
         orphan2 = os.path.join(basedir, "{0}.R2.orphan".format(base))
         length = Config.get("OPTIONS", "LengthOf5pTrim")
         minqual = Config.get("OPTIONS", "Min3pQuality")
-        minlength = Config.get("OPTIONS", "Min3pLength")
+        # Getting sequence average sequence length from fastqc reports then determining minimum sequence length for pairs.
+        fastqc_dir = os.path.join(DataDir, "fastqc")
+        globsearch = os.path.join(fastqc_dir, "{base}.R*_fastqc.zip".format(base=base))
+        fqcfiles = glob.glob(globsearch)
+        if len(fqcfiles) == 2:
+            r1cmd = "unzip -p {fastqc}/{base}.R1_fastqc.zip {base}.R1_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
+            r2cmd = "unzip -p {fastqc}/{base}.R2_fastqc.zip {base}.R2_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
+            r1length = [(int(x)-int(length))/2 for x in subprocess.check_output(r1cmd, shell=True).strip().split('-')]
+            r2length = [(int(x)-int(length))/2 for x in subprocess.check_output(r2cmd, shell=True).strip().split('-')]
+            if min(r1length) < 25:
+                r1length = max(r1length)
+            else:
+                r1length = min(r1length)
+            if min(r2length) < 25:
+                r2length = max(r2length)
+            else:
+                r2length = min(r2length)
+            lengths = [r1length, r2length]
+            minlength = sum(lengths) / len(lengths)
+        else:
+            minlength = Config.get("OPTIONS", "Min3pLength")
         calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
                           .format(java, minheap, maxheap, trim)
         cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}" \
@@ -135,7 +159,7 @@ def worker(i):
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
 
-
+# Garbage Collector as of yet unused.        
 def collectTheGarbage(files):
     for filename in files:
         command = "rm -rf {0}".format(filename)
@@ -143,18 +167,7 @@ def collectTheGarbage(files):
         subprocess.call(command, shell=True)
     return 1
 
-# if __name__ == "__main__":
-#     # Attempting with pool of workers.
-#     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-
-#     results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
-#     for result in results:
-#         z = result.get()
-
-#     print("="*100)
-#     print("{0} has finished running.".format(__file__))
-
-
+# Necessary to group processes by memory.
 def grouper(iterable, n, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx
@@ -178,9 +191,17 @@ if __name__ == "__main__":
     for group in total:
         results = [pool.apply_async(func=worker, args=(i, )) for i in group]
         for result in results:
-            z = result.get()
+            result.get()
         print("="*100)
         print("{0} has finished running.".format(str(group)))
 
-    print("="*200)
-    print("{0} has finished running.".format(__file__))
+    # print("="*200)
+    # print("{0} has finished running.".format(__file__))
+
+    # # Trimmomatic runs multi-thread on ALL threads so run each accession at a time.
+    # for i in LineNo.keys():
+    #     worker(i)
+    #     print("="*100)
+    #     print("{0} has finished running.".format(str(i)))
+    # print("="*200)
+    # print("{0} has finished running.".format(__file__))

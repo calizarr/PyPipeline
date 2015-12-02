@@ -46,19 +46,16 @@ def worker(i):
        and os.path.exists("{0}{1}.R2.fastq".format(OR, prefix)):
         print("Reads have already been deinterleaved: {0}".format(path))
     else:
-        print("Unzipping file: "+path)
-        cmd = "gunzip "+path
+        print("Running python deinterleave script")
+        python = Config.get('PATHS', 'python')
+        script = Config.get("PATHS", "deinterleave")
+        file_in = os.path.join(Config.get("DIRECTORIES", "combined"), prefix+".fastq.gz")
+        file_r1 = os.path.join(OR, prefix + ".R1.fastq.gz")
+        file_r2 = os.path.join(OR, prefix + ".R2.fastq.gz")
+        dic = {"python":python, "script":script, "file_in":file_in, "file_r1":file_r1, "file_r2":file_r2}
+        cmd = "{python} {script} {file_in} {file_r1} {file_r2}".format(**dic)
         print("Running command: \n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
-        script = Config.get("PATHS", "fqscript")
-        P1 = Config.get("DIRECTORIES", "combined")+"/"+prefix+".fastq"
-        capt = "/1"
-        cmd1 = "perl "+script+" "+P1+" "+OR+" R1 R2 "+capt+" H1s"
-        print("Running command: \n{0}".format(cmd1))
-        subprocess.call(cmd1, shell=True)
-        cmd2 = "gzip {0}".format(P1)
-        print("Zipping combined file: \n{0}".format(cmd2))
-        subprocess.call(cmd2, shell=True)
 
 if __name__ == "__main__":
     # Attempting with pool of workers.

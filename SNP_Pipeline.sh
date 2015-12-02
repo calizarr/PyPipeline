@@ -1,7 +1,8 @@
+
 #!/bin/bash
 
 if [[ $# -lt 7 ]]; then
-    echo "$0: <Config file> <Prepare Reference Switch> <Filter Reads Switch> <Alignment Switch> <Prep BAM Switch> <GATK2 Switch> <VEP Switch>"
+    echo "$0: <Config file> <Prepare Reference Switch> <Filter Reads Switch> <Alignment Switch> <Prep BAM Switch> <GATK2 Switch> <VEP Switch> <email address>"
     echo "Switches are turned on by passing 1 and off by 0"
    exit 1
 fi
@@ -25,44 +26,44 @@ touch $LOG_OUT
 
 # Run prepare references step of pipeline
 if [[ $2 -eq 1 ]]; then
-    echo "python RUN1_PrepareReferences.py $1"
+    echo "python -u RUN1_PrepareReferences.py $1"
     # python RUN1_PrepareReferences.py $1
-    (time python RUN1_PrepareReferences.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN1_PrepareReferences.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 # Run filter step of pipeline
 if [[ $3 -eq 1 ]]; then
-    echo "python RUN2_Filter_Trimmomatic.py $1"
+    echo "python -u RUN2_Filter_Trimmomatic.py $1"
     # python RUN2_Filter_Trimmomatic.py $1 > >(tee $LOG_OUT) 2> >(tee $LOG_ERR >&2)
-    (time python RUN2_Filter_Trimmomatic.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN2_Filter_Trimmomatic.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 # Run Alignment to Genome step of pipeline.
 if [[ $4 -eq 1 ]]; then
-    echo "python RUN3_AlignToReference.py $1"
+    echo "python -u RUN3_AlignToReference.py $1"
     # python RUN3_AlignToReference.py $1 > >(tee $LOG_OUT) 2> >(tee $LOG_ERR >&2)
-    (time python RUN3_AlignToReference.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN3_AlignToReference.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 # Run Preparing BAM files with PicardTools step of pipeline.
 if [[ $5 -eq 1 ]]; then
-    echo "python RUN4_PrepBAM.py $1"
+    echo "python -u RUN4_PrepBAM.py $1"
     # python RUN4_PrepBAM.py $1 > >(tee $LOG_OUT) 2> >(tee $LOG_ERR >&2)
-    (time python RUN4_PrepBAM.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN4_PrepBAM.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 # Run GATK2 on prepared BAM files.
 if [[ $6 -eq 1 ]]; then
-    echo "python RUN5_GATK2.py $1"
+    echo "python -u RUN5_GATK2.py $1"
     # python RUN5_GATK2.py $1 > >(tee $LOG_OUT) 2> >(tee $LOG_ERR >&2)
-    (time python RUN5_GATK2.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN5_GATK2.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 # RUN Variant Effect Predictor on GATK2 BAM files.
 if [[ $7 -eq 1 ]]; then
-    echo "python RUN6_VEP.py $1"
+    echo "python -u RUN6_VEP.py $1"
     # python RUN6_VEP.py $1 > >(tee $LOG_OUT) 2> >(tee $LOG_ERR >&2)
-    (time python RUN6_VEP.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
+    (time python -u RUN6_VEP.py $1 | tee -a $LOG_OUT) 3>&1 1>&2 2>&3 | tee -a $LOG_ERR
 fi
 
 if [[ -n $8 ]]; then

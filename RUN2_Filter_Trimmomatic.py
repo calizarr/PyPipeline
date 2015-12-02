@@ -1,3 +1,4 @@
+
 #!/home/clizarraga/usr/python/bin/bin/python3.4
 from __future__ import print_function
 import sys
@@ -61,7 +62,6 @@ def worker(i):
     directory = DataDir
     print("Working with {0}".format(directory))
     # Attempting to get the read files.
-    # DIR = os.listdir(dir)
     try:
         DIR = os.listdir(directory)
     except OSError as e:
@@ -75,6 +75,7 @@ def worker(i):
     print("These are the files we have acquired:\n{0}".format(CurrentFiles))
     CurrentSourcePaths = CurrentFiles[:]
 
+    # May be obsolete soon, taking advantage of the fact that Trimmomatic can use .gz files and output .gz files
     if Config.getint("PIPELINE", "Compressed"):
         print("Treating files as compressed.")
         thisSet = CurrentSourcePaths[:]
@@ -89,21 +90,33 @@ def worker(i):
             else:
                 CurrentSourcePaths.append(filename)
 
+    # Proper filtering starts here.
     if Config.getint("PIPELINE", "FivePrimeFilter") \
        and Config.getint("PIPELINE", "ThreePrimeFilter") \
        and Config.getint("PIPELINE", "PairedEnd"):
-        # pdb.set_trace()
+        # Getting paths to current files and directories.
+        
+        # Used in constructing new paths.
         basedir = os.path.dirname(CurrentSourcePaths[0])
+        # Path to log Trimmomatic specific log file.
         log = os.path.join(basedir, "{0}.trimlog".format(base))
+        # Read 1 of pair
         read1 = CurrentSourcePaths[0]
+        # Read 2 of pair
         read2 = CurrentSourcePaths[1]
+        # Path & Filename for Filtered Read 1
         out1 = os.path.join(basedir, "{0}.R1.3pTrim.5pTrim.Paired.fastq"
                             .format(base))
+        # Path & Filename for Filtered Read 2
         out2 = os.path.join(basedir, "{0}.R2.3pTrim.5pTrim.Paired.fastq"
                             .format(base))
+        # Path & Filename for orphaned reads from R1.
         orphan1 = os.path.join(basedir, "{0}.R1.orphan".format(base))
+        # Path & Filename for orphaned reads from R2.
         orphan2 = os.path.join(basedir, "{0}.R2.orphan".format(base))
+        # Length to crop from beginning of read. Used in old Illumina sequencing because of known errors.
         length = Config.get("OPTIONS", "LengthOf5pTrim")
+        # Minimum quality of nucleotide before it gets cut.
         minqual = Config.get("OPTIONS", "Min3pQuality")
         # Getting sequence average sequence length from fastqc reports then determining minimum sequence length for pairs.
         fastqc_dir = os.path.join(DataDir, "fastqc")
@@ -126,6 +139,7 @@ def worker(i):
             minlength = sum(lengths) / len(lengths)
         else:
             minlength = Config.get("OPTIONS", "Min3pLength")
+        # Setting up and calling Trimmomatic on the command line.
         calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
                           .format(java, minheap, maxheap, trim)
         cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}" \
@@ -135,16 +149,22 @@ def worker(i):
         subprocess.call(cmd, shell=True)
 
         # Moving files to appropriate folders.
+        # Path & Filename for final R1 file.
         FR1 = os.path.join(FiltDir, "{0}.R1.fastq".format(base))
+        # Path & Filename for final R2 file.
         FR2 = os.path.join(FiltDir, "{0}.R2.fastq".format(base))
+        # Path for Orphan directory.
         ORO = os.path.join(FiltDir, "Orphans")
+        # Path for log directory.
         LOGS = os.path.join(FiltDir, "Logs")
+        # Moving R1/R2 files
         cmd = "mv {0} {1}".format(out1, FR1)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         cmd = "mv {0} {1}".format(out2, FR2)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        # Checking if Orphan directory exists, if not create and move.
         if not os.path.exists(ORO):
             os.makedirs(ORO)
         cmd = "mv {0} {1}".format(orphan1, ORO)
@@ -153,13 +173,14 @@ def worker(i):
         cmd = "mv {0} {1}".format(orphan2, ORO)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        # Checking if Logs directory exists, if not create and move.
         if not os.path.exists(LOGS):
             os.makedirs(LOGS)
         cmd = "mv {0} {1}".format(log, LOGS)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
 
-# Garbage Collector as of yet unused.        
+# Garbage Collector as of yet unused.
 def collectTheGarbage(files):
     for filename in files:
         command = "rm -rf {0}".format(filename)
@@ -186,17 +207,20 @@ if __name__ == "__main__":
     at_once = int(mem_total_gib//memper)
     print("This is the total number allowed at once: {0}".format(at_once))
     total = grouper(LineNo.keys(), at_once)
+    totalcpu = mp.cpu_count() / int(nThreads)
+    print("Total processes at a time: {0}".format(totalcpu))
     # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    pool = mp.Pool(processes=at_once)
+    print("Choosing the lesser of the two: {0}".format(min([at_once, totalcpu])))
+    pool = mp.Pool(processes=min([at_once, totalcpu]))
     for group in total:
         results = [pool.apply_async(func=worker, args=(i, )) for i in group]
         for result in results:
-            result.get()
+            result.wait()
         print("="*100)
         print("{0} has finished running.".format(str(group)))
 
-    # print("="*200)
-    # print("{0} has finished running.".format(__file__))
+    print("="*200)
+    print("{0} has finished running.".format(__file__))
 
     # # Trimmomatic runs multi-thread on ALL threads so run each accession at a time.
     # for i in LineNo.keys():

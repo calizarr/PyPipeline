@@ -10,7 +10,7 @@ You will need to replace the paths to where the files will be stored.
 -------------------------------------------------------------------------------
 - Python 2.7 or greater (preferably: Python 2.7)
     - A local compile or virtual environment of Python would be ideal.
-    - [Download Python 3.4](https://www.python.org/download/)
+    - [Download Python](https://www.python.org/download/)
     - Biopython 1.65 is required.
 - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
     - Can be installed using local::lib and cpanm:

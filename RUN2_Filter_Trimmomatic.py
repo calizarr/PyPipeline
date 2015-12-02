@@ -38,6 +38,14 @@ print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
 
 
+# Garbage Collector as of yet unused.
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
+
 def worker(i):
     # Getting paths for everything.
     DataDir = Config.get("DIRECTORIES", "reads")
@@ -57,7 +65,7 @@ def worker(i):
         base = Config.get("SINGLE_ACCESSIONS", i)
     # Lists to hold paths and garbage to be collected.
     CurrentSourcePaths = []
-    # GarbageCollector = []
+    GarbageCollector = []
     directory = DataDir
     print("Working with {0}".format(directory))
     # Attempting to get the read files.
@@ -104,10 +112,10 @@ def worker(i):
         # Read 2 of pair
         read2 = CurrentSourcePaths[1]
         # Path & Filename for Filtered Read 1
-        out1 = os.path.join(basedir, "{0}.R1.3pTrim.5pTrim.Paired.fastq"
+        out1 = os.path.join(basedir, "{0}.R1.3pTrim.5pTrim.Paired.fastq.gz"
                             .format(base))
         # Path & Filename for Filtered Read 2
-        out2 = os.path.join(basedir, "{0}.R2.3pTrim.5pTrim.Paired.fastq"
+        out2 = os.path.join(basedir, "{0}.R2.3pTrim.5pTrim.Paired.fastq.gz"
                             .format(base))
         # Path & Filename for orphaned reads from R1.
         orphan1 = os.path.join(basedir, "{0}.R1.orphan".format(base))
@@ -146,12 +154,14 @@ def worker(i):
                       out1, orphan1, out2, orphan2, length, minqual, minlength)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
+        GarbageCollector.append(read1)
+        GarbageCollector.append(read2)
 
         # Moving files to appropriate folders.
         # Path & Filename for final R1 file.
-        FR1 = os.path.join(FiltDir, "{0}.R1.fastq".format(base))
+        FR1 = os.path.join(FiltDir, "{0}.R1.fastq.gz".format(base))
         # Path & Filename for final R2 file.
-        FR2 = os.path.join(FiltDir, "{0}.R2.fastq".format(base))
+        FR2 = os.path.join(FiltDir, "{0}.R2.fastq.gz".format(base))
         # Path for Orphan directory.
         ORO = os.path.join(FiltDir, "Orphans")
         # Path for log directory.
@@ -178,14 +188,8 @@ def worker(i):
         cmd = "mv {0} {1}".format(log, LOGS)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
-
-# Garbage Collector as of yet unused.
-def collectTheGarbage(files):
-    for filename in files:
-        command = "rm -rf {0}".format(filename)
-        print("Running command:\n{0}\n".format(command))
-        subprocess.call(command, shell=True)
-    return 1
+        # Removing intermediary files
+        # collectTheGarbage(GarbageCollector)
 
 # Necessary to group processes by memory.
 def grouper(iterable, n, fillvalue=None):

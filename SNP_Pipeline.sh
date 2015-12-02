@@ -9,8 +9,8 @@ fi
 echo "Make sure that all Pre steps of Pipeline have been run. This script only launches RUN1-RUN6."
 echo "Config file: $1. Prepare Reference: $2. Filter Reads: $3. Align to Genome: $4. Prep BAMS <PicardTools>: $5. GATK2: $6. Variant Effect Predictor: $7."
 
-LOG_ERR="SNP_Pipeline.error.log"
-LOG_OUT="SNP_Pipeline.output.log"
+LOG_ERR="$1.SNP_Pipeline.error.log"
+LOG_OUT="$1.SNP_Pipeline.output.log"
 
 if [ -f $LOG_ERR ]; then
     rm $LOG_ERR

@@ -33,6 +33,13 @@ LineNo = dict(Config.items('NUMBER_MULTIPLE'))
 print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
 
+# Garbage Collector as of yet unused.
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
 
 def worker(i):
     mult = int(LineNo[i])
@@ -42,6 +49,10 @@ def worker(i):
         prefix = Config.get("SINGLE_ACCESSIONS", i)
     P1 = "{0}/{1}.R1.fastq".format(Config.get("DIRECTORIES", "filtered_dir"), prefix)
     P2 = "{0}/{1}.R2.fastq".format(Config.get("DIRECTORIES", "filtered_dir"), prefix)
+    if not os.path.isfile(P1):
+        P1 += ".gz"
+    if not os.path.isfile(P2):
+        P2 += ".gz"
     outputDir = "{0}/{1}".format(Config.get("DIRECTORIES", "output_dir"), prefix)
     base = prefix
     # Location of Bowtie2 Alignments
@@ -76,9 +87,11 @@ def worker(i):
     print("Making bowtie2 log")
     print("Saving to:\n{0}".format(fdir))
     f.close()
-    # print("Zipping read files. No longer needed.")
-    # cmd = "gzip {0} {1}".format(P1, P2)
-    # subprocess.call(cmd, shell=True)
+    # Collecting trash
+    GarbageCollector = []
+    GarbageCollector.append(P1)
+    GarbageCollector.append(P2)
+    # collectTheGarbage(GarbageCollector)
 
 if __name__ == "__main__":
     # Attempting with pool of workers.

@@ -35,6 +35,13 @@ LineNo = dict(Config.items('NUMBER_MULTIPLE'))
 print(LineNo)
 print("Finding total number of files: {0}".format(len(LineNo)))
 
+# Garbage Collector as of yet unused.
+def collectTheGarbage(files):
+    for filename in files:
+        command = "rm -rf {0}".format(filename)
+        print("Running command:\n{0}\n".format(command))
+        subprocess.call(command, shell=True)
+    return 1
 
 def worker(i):
     try:
@@ -106,14 +113,6 @@ def worker(i):
         GarbageCollector.append(finput)
 
     # collectTheGarbage(GarbageCollector)
-
-    
-def collectTheGarbage(files):
-    for filename in files:
-        command = "rm -rf {0}".format(filename)
-        print("Running command:\n{0}\n".format(command))
-        subprocess.call(command, shell=True)
-    return 1
 
 
 def grouper(iterable, n, fillvalue=None):

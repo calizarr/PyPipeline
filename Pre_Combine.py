@@ -1,4 +1,4 @@
-#!/home/clizarraga/usr/python/bin/bin/python3.4
+#!/usr/bin/env python
 import sys
 import subprocess
 # Equivalent to Perl's FindBin...sorta

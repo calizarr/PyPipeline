@@ -1,4 +1,4 @@
-#!/home/clizarraga/bin/python3.4
+#!/usr/bin/env python
 # Only for Phytozome gff's.
 import sys
 

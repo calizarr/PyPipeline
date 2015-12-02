@@ -1,4 +1,4 @@
-#!env/bin/python
+#!/usr/bin/env python
 #This Python script requires Biopython 1.51 or later
 from __future__ import print_function
 from Bio.SeqIO.QualityIO import FastqGeneralIterator

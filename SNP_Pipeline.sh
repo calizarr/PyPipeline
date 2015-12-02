@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 if [[ $# -lt 7 ]]; then

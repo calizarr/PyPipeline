@@ -5,13 +5,13 @@
 Use the sample configurations as a guideline for your own (if tweaking.) Several viewings of the script files may be necessary.
 You will need to replace the paths to where the files will be stored.
 
-## Requirements: ##
+### Requirements: ###
 
 -------------------------------------------------------------------------------
-- Python 3.4 or greater (preferably: Python 3.4)
-    - A local compile or virtual environment of Python 3.4 would be ideal.
-    - [Download Python 3.4](https://www.python.org/download/releases/3.4.0/)
-- Python 2.6/2.7 should be compatible at this point.
+- Python 2.7 or greater (preferably: Python 2.7)
+    - A local compile or virtual environment of Python would be ideal.
+    - [Download Python 3.4](https://www.python.org/download/)
+    - Biopython 1.65 is required.
 - Perl 5.10 and dependencies for Variant Effect Predictor scripts.
     - Can be installed using local::lib and cpanm:
         - [How to install local::lib and cpanm bootstrapping (no root/sudo access)](http://stackoverflow.com/questions/2980297/how-can-i-use-cpan-as-a-non-root-user)
@@ -28,6 +28,9 @@ You will need to replace the paths to where the files will be stored.
     - [Download PicardTools](http://broadinstitute.github.io/picard/)
     - All other tools currently exist on infrastructure:
         - Bowtie2, fastx toolkit (fastq_quality_trimmer), and samtools.
+- Trimmomatic:
+    - [Download Trimmomatic](http://www.usadellab.org/cms/?page=trimmomatic)
+        
 
 ## Usage: ##
 
@@ -62,13 +65,8 @@ You will need to replace the paths to where the files will be stored.
 
   - Combine is to concatenate together accession files which have been separated.
   - Deinterleave is to separate a FastQ file into two separate Read 1 and Read 2 files while maintaining order.
-    * Deinterleave now uses findFastq.pl in Tools, it is a perl script used to separate the Reads via capture strings.
-    * Usage is specified if you just run perl findFastq.pl
-
-##### 4. Illumina 1.5 Reads: #####
-
-  - Check if your reads are between Illumina 1.3+ and Illumina 1.8. If so, check for "B" quality scores.
-    * If they exist, run QC_Illumina1.5.py and it will trim the reads from the first B onwards.
+    * Deinterleave now uses deinterleave_fastq.py in Tools, it is a custom python script used to separate the Reads via Biopython.
+    * Usage is specified if you just run python deinterleave_fastq.py
      
 ## RUN STEPS: ##
 
@@ -78,12 +76,9 @@ You will need to replace the paths to where the files will be stored.
 
 - Uses bowtie2-build with default parameters.
    
-##### 2. RUN2_Filter will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans. #####
+##### 2. RUN2_Filter_Trimmomatic will take your FastQ files, 3p and 5p trim them and then separate the pairs and orphans. #####
 
-  - 5pTrim uses a custom Perl script to remove the first 15 nucleotides.
-    * Option to turn off 5pTrim option if undesired.
-  - 3pTrim uses the fastq_quality_trimmer in the fastx_toolkit.
-  - RUN2_Filter_Trimmomatic.py does the same thing, but is much faster and multithreaded.
+  - RUN2_Filter_Trimmomatic.py cuts 5' end by length, trims 3' end by quality, and discards reads under 3' length, then it seperates the reads into pairs and orphans.
  
 ##### 3. RUN3_AlignToReferences will take your filtered FastQ read pairs and align them to the Bowtie2 indices/reference genome. #####
 
@@ -112,6 +107,3 @@ You will need to replace the paths to where the files will be stored.
 Notes:
   - If the Pipeline is run with several accessions there can only be one overall minimum quality score and length. If your reads differ significantly, make two configuration files (or more) for the reads that can't be filtered the same way.
   - Filtering for SNPs or Indels and quality filtering can be done between the RUN5 and RUN6 versions. GATK2 has functions for filtering, bcftools does as well, and finally you can also make your own with linux command line tools (sed, awk, grep piped work well.)
-
-Optional:
-  * There are two optional phred quality score guessing scripts in the Scripts folder. One is in Python and the other one is in Perl. If you already know the quality score for your FastQ files then ignore them, but if you can't make an educated guess see if these two scripts may help you. This is important. The best way to find out Phred score quality is to manually, visually inspect the fastq files yourself.

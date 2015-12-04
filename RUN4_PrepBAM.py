@@ -2,6 +2,8 @@
 from __future__ import print_function
 import sys
 import subprocess
+import math
+import pdb
 
 # Equivalent to Perl's FindBin...sorta
 import os
@@ -43,34 +45,48 @@ def collectTheGarbage(files):
         subprocess.call(command, shell=True)
     return 1
 
+
+suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+def humansize(nbytes):
+    if nbytes == 0: return '0 B'
+    i = 0
+    while nbytes >= 1024 and i < len(suffixes)-1:
+        nbytes /= 1024.
+        i += 1
+    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
+    return (f, suffixes[i])
+
 def worker(i):
-    try:
-        mult = int(LineNo[i])
-    except KeyError:
-        return "IGNORE ME!"
+    mult = int(LineNo[i])
     if mult > 1:
         prefix = Config.get("COMBINE_ACCESSIONS", i)
     else:
         prefix = Config.get("SINGLE_ACCESSIONS", i)
     GarbageCollector = []
     base = prefix
+    inputDir = Config.get("DIRECTORIES", "output_dir")
     java = Config.get("PATHS", "java")
     picard = Config.get("PATHS", "picard")
     minheap = Config.get("OPTIONS", "minheap")
+    # Checking file size against heap
+    filename = os.path.join(inputDir, base, base + ".Alignments.bam")
+    filesize = list(humansize(os.path.getsize(filename)))
+    filesize[0] = int(math.ceil(float(filesize[0])))
     maxheap = Config.get("OPTIONS", "maxheap")
+    if filesize[1] in suffixes[3:5] and filesize[0] < int(maxheap[:-1]):
+        maxheap = ''.join([str(filesize[0]+2), 'g'])
     callpicard = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
                  .format(java, minheap, maxheap, picard)
     tmp = Config.get("DIRECTORIES", "temp_dir")
-    inputDir = Config.get("DIRECTORIES", "output_dir")
-    prefix = "{0}/{1}".format(inputDir, base)
-    gatkdir = "{0}/gatk-results".format(prefix)
+    prefix = os.path.join(inputDir, base)
+    gatkdir = os.path.join(prefix, "gatk-results")
     if not os.path.exists(gatkdir):
         os.makedirs(gatkdir)
     
     if Config.getint("PIPELINE", "SortSam"):
         # Sorting bam with PicardTools in Coordinate Order.
-        finput = "{0}/{1}.Alignments.bam".format(prefix, base)
-        foutput = "{0}/{1}.Alignments.PicardSorted.bam".format(gatkdir, base)
+        finput = os.path.join(prefix, base + ".Alignments.bam")
+        foutput = os.path.join(gatkdir, base + ".Alignments.PicardSorted.bam")
         cmd = "{0} SortSam I={1} O={2} SO=coordinate TMP_DIR={3} CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT" \
               .format(callpicard, finput, foutput, tmp)
         print("Running commmand:\n{0}".format(cmd))
@@ -129,18 +145,68 @@ if __name__ == "__main__":
     mem_total_kib = meminfo['MemTotal']
     mem_total_gib = mem_total_kib*1.0e-6
     # Getting number of total processes that can be run at once given memory constraints.
-    memper = int(Config.get("OPTIONS", "maxheap")[:-1])
-    at_once = int(mem_total_gib//memper)
-    print("This is the total number allowed at once: {0}".format(at_once))
-    total = grouper(LineNo.keys(), at_once)
-    # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    pool = mp.Pool(processes=at_once)
+    
+    # Trying to ascertain groups with actual sizes of files:
+    sizeList = []
+    # pdb.set_trace()
+    for i in LineNo.keys():
+        mult = int(LineNo[i])
+        if mult > 1:
+            prefix = Config.get("COMBINE_ACCESSIONS", i)
+        else:
+            prefix = Config.get("SINGLE_ACCESSIONS", i)
+        base = prefix
+        inputDir = Config.get("DIRECTORIES", "output_dir")
+        filename = os.path.join(inputDir, base, base + ".Alignments.bam")
+        filesize = list(humansize(os.path.getsize(filename)))
+        filesize[0] = int(math.ceil(float(filesize[0])))
+        maxheap = Config.get("OPTIONS", "maxheap")
+        if filesize[1] in suffixes[3:5] and filesize[0] < int(maxheap[:-1]):
+            maxheap = filesize[0]+2
+        else:
+            maxheap = int(maxheap[:-1])
+        sizeList.append((i, maxheap))
+    # Sorting list in ascending order by size of maxheap
+    sizeList = sorted(sizeList, key = lambda x: x[1])
+    # print("This is the sizeList: {0} and length: {1}".format(sizeList, len(sizeList)))
+    # pdb.set_trace()
+    size = 0
+    i = 1
+    j = 0
+    total = []
+    while i < len(sizeList):
+        while i < len(sizeList) and (size < mem_total_gib and size + sizeList[i][1] < mem_total_gib):
+            # print("This is i: {0} and this is the size: {1}".format(i, size))
+            size += sizeList[i][1]
+            i += 1
+            # if i >= len(sizeList):
+            #     break
+        total.append([x[0] for x in sizeList[j:i]])
+        # print("This is i after the nested loop: {0}".format(i))
+        j = i
+        size = 0
+        # print("total apprehended so far: {0}".format(total))
     for group in total:
-        results = [pool.apply_async(func=worker, args=(i, )) for i in group]
-        for result in results:
-            z = result.get()
-        print("="*100)
+        # pool = mp.Pool(processes=len(group))
+        # results = [pool.apply_async(func=worker, args=(k, )) for k in group]
+        # for result in results:
+        #     result.wait()
+        print("=" * 100)
         print("{0} has finished running.".format(str(group)))
+    # Finished ascertaining groups with actual sizes.
+
+    # memper = int(Config.get("OPTIONS", "maxheap")[:-1])
+    # at_once = int(mem_total_gib//memper)
+    # print("This is the total number allowed at once: {0}".format(at_once))
+    # total = grouper(LineNo.keys(), at_once)
+    # # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # pool = mp.Pool(processes=at_once)
+    # for group in total:
+    #     results = [pool.apply_async(func=worker, args=(i, )) for i in group]
+    #     for result in results:
+    #         z = result.get()
+    #     print("="*100)
+    #     print("{0} has finished running.".format(str(group)))
 
     # results = [pool.apply_async( func=worker,args=(i,) ) for i in LineNo]
     # for result in results:

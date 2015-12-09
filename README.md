@@ -86,6 +86,7 @@ $(HOME)/bin/parallel fastqc -t $cpuPer -o fastqc/ {} < tofastqc
     * cpuPer is calculated using bc but essentially is number of files (wc -l) divided by number of processors (grep)
     * cpuPer can be just set manually cpuPer=3
     * $(HOME)/bin/parallel is the path to your GNU parallel installation
+    * fastqc -t {threads per file} -o {output directory} {input file}
      
 ## RUN STEPS: ##
 

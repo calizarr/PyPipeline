@@ -69,7 +69,7 @@ You will need to replace the paths to where the files will be stored.
     * Usage is specified if you just run python deinterleave_fastq.py
   - After deinterleaving if you want to make use of the pipeline choosing a quality minimum length per file:
 
-  ```
+  ```bash
   test -e fastqc/ && echo "fastqc dir exists" || mkdir fastqc
   for x in *.fastq.gz
   do
@@ -80,13 +80,13 @@ You will need to replace the paths to where the files will be stored.
   cpuPer=echo "$(grep -c ^processor /proc/cpuinfo)/$(wc -l tofastqc | awk '{print $1}')" | bc
   $(HOME)/bin/parallel fastqc -t $cpuPer -o fastqc/ {} < tofastqc
   ```
-    * Tests if fastqc directory exists, if not makes it.
-    * Loops through all the gzipped read files, tests the fastqc directory to see if they've already been analyzed
-    * If not analyzed, add to tofastqc file to be analyzed.
-    * cpuPer is calculated using bc but essentially is number of files (wc -l) divided by number of processors (grep)
-    * cpuPer can be just set manually cpuPer=3
-    * $(HOME)/bin/parallel is the path to your GNU parallel installation
-    * fastqc -t {threads per file} -o {output directory} {input file}
+  * Tests if fastqc directory exists, if not makes it.
+  * Loops through all the gzipped read files, tests the fastqc directory to see if they've already been analyzed
+  * If not analyzed, add to tofastqc file to be analyzed.
+  * cpuPer is calculated using bc but essentially is number of files (wc -l) divided by number of processors (grep)
+  * cpuPer can be just set manually cpuPer=3
+  * $(HOME)/bin/parallel is the path to your GNU parallel installation
+  * fastqc -t {threads per file} -o {output directory} {input file}
      
 ## RUN STEPS: ##
 

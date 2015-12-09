@@ -69,10 +69,10 @@ You will need to replace the paths to where the files will be stored.
     * Usage is specified if you just run python deinterleave_fastq.py
   - After deinterleaving if you want to make use of the pipeline choosing a quality minimum length per file:
 
- ```
- test -e fastqc/ && echo "fastqc dir exists" || mkdir fastqc
- for x in *.fastq.gz
- do
+```
+test -e fastqc/ && echo "fastqc dir exists" || mkdir fastqc
+for x in *.fastq.gz
+do
   y=${x%.fastq.gz}
   file=$y\_fastqc.zip
   test -f "fastqc/$file" && echo "$file exists" || echo "$x" >> tofastqc

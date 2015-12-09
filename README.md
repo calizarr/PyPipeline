@@ -67,6 +67,24 @@ You will need to replace the paths to where the files will be stored.
   - Deinterleave is to separate a FastQ file into two separate Read 1 and Read 2 files while maintaining order.
     * Deinterleave now uses deinterleave_fastq.py in Tools, it is a custom python script used to separate the Reads via Biopython.
     * Usage is specified if you just run python deinterleave_fastq.py
+  - After deinterleaving if you want to make use of the pipeline choosing a quality minimum length per file:
+    * ```
+    * test -e fastqc/ && echo "fastqc dir exists" || mkdir fastqc
+    * for x in *.fastq.gz
+    * do
+    *  y=${x%.fastq.gz}
+    *  file=$y\_fastqc.zip
+    *  test -f "fastqc/$file" && echo "$file exists" || echo "$x" >> tofastqc
+    * done
+    * cpuPer=echo "$(grep -c ^processor /proc/cpuinfo)/$(wc -l tofastqc | awk '{print $1}')" | bc
+    * $(HOME)/bin/parallel fastqc -t $cpuPer -o fastqc/ {} < tofastqc
+    * ```
+    * Tests if fastqc directory exists, if not makes it.
+    * Loops through all the gzipped read files, tests the fastqc directory to see if they've already been analyzed
+    * If not analyzed, add to tofastqc file to be analyzed.
+    * cpuPer is calculated using bc but essentially is number of files (wc -l) divided by number of processors (grep)
+    * cpuPer can be just set manually cpuPer=3
+    * $(HOME)/bin/parallel is the path to your GNU parallel installation
      
 ## RUN STEPS: ##
 

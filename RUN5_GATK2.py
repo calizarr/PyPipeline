@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
     for result in results:
-        z = result.get()
+        result.wait()
 
     print("="*200)
     print("{0} has finished running.".format(__file__))

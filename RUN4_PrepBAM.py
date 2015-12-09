@@ -187,10 +187,10 @@ if __name__ == "__main__":
         size = 0
         # print("total apprehended so far: {0}".format(total))
     for group in total:
-        # pool = mp.Pool(processes=len(group))
-        # results = [pool.apply_async(func=worker, args=(k, )) for k in group]
-        # for result in results:
-        #     result.wait()
+        pool = mp.Pool(processes=len(group))
+        results = [pool.apply_async(func=worker, args=(k, )) for k in group]
+        for result in results:
+            result.wait()
         print("=" * 100)
         print("{0} has finished running.".format(str(group)))
     # Finished ascertaining groups with actual sizes.

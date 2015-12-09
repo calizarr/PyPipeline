@@ -101,8 +101,8 @@ def collectTheGarbage(files):
     
 if __name__ == "__main__":
     
-    if cdbmake:
-        makeCDB()
+    # if cdbmake:
+    #     makeCDB()
     # Attempting with pool of workers.
     pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
 
@@ -113,7 +113,11 @@ if __name__ == "__main__":
     #     print("="*200)
     results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
     for result in results:
-        z = result.get()
-        
+        result.wait()
+
+    # for i in LineNo.keys():
+    #     worker(i)
+    #     print("="*100)
+    #     print("{0} has finished running.".format(str(i)))
     print("="*200)
     print("{0} has finished running.".format(__file__))

@@ -72,12 +72,13 @@ def worker(i):
     # Final Bowtie2 Alignment file.
     bowAln = "{0}.bam".format(bowRoot)
     phred = "phred{0}".format(Config.get("OPTIONS", "phred"))
+    stringency = Config.get("BOWTIE", "opts")
     seed = "0821986"
     # {0} Threads {1} Seed Num {2} phred {3} indices {4} Read 1 {5} Read 2 {6} samtools {7} filename
-    opts = "-p {0} --very-sensitive --seed {1} --{2} -x {3} -1 {4} -2 {5} | {6} view -bS - > {7}" \
-           .format(nThreads, seed, phred, bowRef, P1, P2, samtools, bowAln)
-    # opts = "-p {0} --very-sensitive --{1} -x {2} -0 {3} -1 {4} | {5} view -bS - > {6}" \
-    # .format(nThreads, phred, bowRef, P1, P2, samtools, bowAln)
+    # opts = "-p {0} --very-sensitive --seed {1} --{2} -x {3} -1 {4} -2 {5} | {6} view -bS - > {7}" \
+    #        .format(nThreads, seed, phred, bowRef, P1, P2, samtools, bowAln)
+    opts = "-p {0} {1} --seed {2} --{3} -x {4} -1 {5} -2 {6} | {7} view -bS - > {8}" \
+           .format(nThreads, stringency, seed, phred, bowRef, P1, P2, samtools, bowAln)
     cmd = "{0} {1}".format(Config.get("PATHS", "bowtie2"), opts)
     print("Running command:\n{0}".format(cmd))
     fdir = "{0}/{1}.bowtie2.log".format(outputDir, base)

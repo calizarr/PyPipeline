@@ -2,6 +2,7 @@
 from __future__ import print_function
 import sys
 import subprocess
+import pdb
 
 # Equivalent to Perl's FindBin...sorta
 import os
@@ -61,7 +62,7 @@ def worker(i):
     gatkdir = "{0}/gatk-results".format(prefix)
     if not os.path.exists(gatkdir):
         os.makedirs(gatkdir)
-    
+
     if Config.getint("PIPELINE", "RealignTC"):
         # Getting target intervals to realign into.
         finput = "{0}/{1}.PicardSorted.DeDupped.RG.bam".format(gatkdir, base)
@@ -98,12 +99,22 @@ def worker(i):
 
     
 if __name__ == "__main__":
-    # Attempting with pool of workers.
-    pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+    # Debug statement to test it with pdb.set_trace()
+    if Config.getboolean("OPTIONS", "debug"):
+        for i in LineNo.keys():
+            pdb.set_trace()
+            worker(i)
+            print("=" * 100)
+            print("{0} has finished running.".format(str(i)))
+        print("="*200)
+        print("{0} has finished running.".format(__file__))
+    else:
+        # Attempting with pool of workers.
+        pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
 
-    results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
-    for result in results:
-        result.wait()
+        results = [pool.apply_async(func=worker, args=(i, )) for i in LineNo]
+        for result in results:
+            result.wait()
 
-    print("="*200)
-    print("{0} has finished running.".format(__file__))
+        print("="*200)
+        print("{0} has finished running.".format(__file__))

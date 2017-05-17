@@ -39,15 +39,15 @@ def worker():
     cmd = "{0}-build {1} {2}".format(bowtie2, ref, indices)
     print("Running command (bowtie2-build): ")
     print(cmd)
-    subprocess.call(cmd, shell=True)
+    subprocess.call(cmd, shell=True, executable="/bin/bash")
     cmd1 = "{0} CreateSequenceDictionary R={1} O={2} TMP_DIR={3}".format(callpicard, ref, dic, tmp)
     print("Running command (GATK2 dictionary): ")
     print(cmd1)
-    subprocess.call(cmd1, shell=True)
+    subprocess.call(cmd1, shell=True, executable="/bin/bash")
     cmd2 = "{0} faidx {1}".format(samtools, ref)
     print("Running command (SAMTOOLS indexing): ")
     print(cmd2)
-    subprocess.call(cmd2, shell=True)
+    subprocess.call(cmd2, shell=True, executable="/bin/bash")
     
 if __name__=="__main__":
     worker()

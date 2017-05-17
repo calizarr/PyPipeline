@@ -123,15 +123,25 @@ def worker(i):
         orphan2 = os.path.join(basedir, "{0}.R2.orphan".format(base))
         # Length to crop from beginning of read. Used in old Illumina sequencing because of known errors.
         length = Config.get("OPTIONS", "LengthOf5pTrim")
+        # Leading trimming filtering step.
+        leading = Config.get("OPTIONS", "Leading")
         # Minimum quality of nucleotide before it gets cut.
         minqual = Config.get("OPTIONS", "Min3pQuality")
+        # Getting the fasta adapters
+        fadapt = Config.get("PATHS", "fasta_adapt")
         # Getting sequence average sequence length from fastqc reports then determining minimum sequence length for pairs.
         fastqc_dir = os.path.join(DataDir, "fastqc")
-        globsearch = os.path.join(fastqc_dir, "{base}.R*_fastqc.zip".format(base=base))
-        fqcfiles = glob.glob(globsearch)
+        globsearch = os.path.join(fastqc_dir, "{base}*[_.]R*_fastqc.zip".format(base=base))
+        fqcfiles = sorted(glob.glob(globsearch))
         if len(fqcfiles) == 2:
-            r1cmd = "unzip -p {fastqc}/{base}.R1_fastqc.zip {base}.R1_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
-            r2cmd = "unzip -p {fastqc}/{base}.R2_fastqc.zip {base}.R2_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
+            r1base = os.path.splitext(os.path.basename(fqcfiles[0]))[0]
+            r2base = os.path.splitext(os.path.basename(fqcfiles[1]))[0]
+            # r1base = os.path.basename('.'.join(fqcfiles[0].split('.')[:-1]))
+            # r2base = os.path.basename('.'.join(fqcfiles[1].split('.')[:-1]))
+            # r1cmd = "unzip -p {fastqc}/{base}.R1_fastqc.zip {base}.R1_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
+            # r2cmd = "unzip -p {fastqc}/{base}.R2_fastqc.zip {base}.R2_fastqc/fastqc_data.txt | grep length | cut -f2".format(base=base, fastqc=fastqc_dir)
+            r1cmd = "unzip -p {fastqc}/{r1basezip} {r1base}/fastqc_data.txt | grep length | cut -f2".format(r1basezip=r1base+".zip", r1base=r1base, fastqc=fastqc_dir)
+            r2cmd = "unzip -p {fastqc}/{r2basezip} {r2base}/fastqc_data.txt | grep length | cut -f2".format(r2basezip=r2base+".zip", r2base=r2base, fastqc=fastqc_dir)
             r1length = [(int(x)-int(length))/2 for x in subprocess.check_output(r1cmd, shell=True).strip().split('-')]
             r2length = [(int(x)-int(length))/2 for x in subprocess.check_output(r2cmd, shell=True).strip().split('-')]
             if min(r1length) < 25:
@@ -149,9 +159,12 @@ def worker(i):
         # Setting up and calling Trimmomatic on the command line.
         calltrimmomatic = "{0} -Xms{1} -Xmx{2} -XX:+UseG1GC -XX:+UseStringDeduplication -jar {3}" \
                           .format(java, minheap, maxheap, trim)
-        cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} HEADCROP:{10} TRAILING:{11} MINLEN:{12}" \
-              .format(calltrimmomatic, nThreads, phred, log, read1, read2,
-                      out1, orphan1, out2, orphan2, length, minqual, minlength)
+        # cmd = "{0} PE -threads {1} -phred{2} -trimlog {3} {4} {5} {6} {7} {8} {9} ILLUMINACLIP:{9} HEADCROP:{11} LEADING:{12} TRAILING:{13} MINLEN:{14}" \
+        #       .format(calltrimmomatic, nThreads, phred, log, read1, read2,
+        #               out1, orphan1, out2, orphan2, fadapt, length, leading, minqual, minlength)
+        trimdict = {"trim": calltrimmomatic, "thr": nThreads, "sc": phred, "R1": read1, "R2": read2, "1P": out1, "1U": orphan1, "2P": out2, "2U": orphan2, "fadapt": fadapt, "head": length, "lead": leading, "trail": minqual, "minlen": minlength}
+        cmd = "{trim} PE -threads {thr} -phred{sc} {R1} {R2} {1P} {1U} {2P} {2U} ILLUMINACLIP:{fadapt}:2:30:10 HEADCROP:{head} LEADING:{lead} TRAILING:{trail} MINLEN:{minlen}" \
+              .format(**trimdict)
         print("Running commmand:\n{0}".format(cmd))
         subprocess.call(cmd, shell=True)
         GarbageCollector.append(read1)
@@ -199,36 +212,45 @@ def grouper(iterable, n, fillvalue=None):
     return itertools.zip_longest(fillvalue=fillvalue, *args)
 
 if __name__ == "__main__":
-    # Attempting with pool of workers.
-    # Getting total memory of machine
-    meminfo = dict((i.split()[0].rstrip(':'), int(i.split()[1]))
-                   for i in open('/proc/meminfo').readlines())
-    mem_total_kib = meminfo['MemTotal']
-    mem_total_gib = mem_total_kib*1.0e-6
-    # Getting number of total processes that can be run at once given memory constraints.
-    memper = int(Config.get("OPTIONS", "maxheap")[:-1])
-    at_once = int(mem_total_gib//memper)
-    print("This is the total number allowed at once: {0}".format(at_once))
-    total = grouper(LineNo.keys(), at_once)
-    totalcpu = mp.cpu_count() / int(nThreads)
-    print("Total processes at a time: {0}".format(totalcpu))
-    # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
-    print("Choosing the lesser of the two: {0}".format(min([at_once, totalcpu])))
-    pool = mp.Pool(processes=min([at_once, totalcpu]))
-    for group in total:
-        results = [pool.apply_async(func=worker, args=(i, )) for i in group]
-        for result in results:
-            result.wait()
-        print("="*100)
-        print("{0} has finished running.".format(str(group)))
+    if Config.getboolean("OPTIONS", "debug"):
+        for i in LineNo.keys():
+            pdb.set_trace()
+            worker(i)
+            print("=" * 100)
+            print("{0} has finished running.".format(str(i)))
+        print("="*200)
+        print("{0} has finished running.".format(__file__))
+    else:        
+        # Attempting with pool of workers.
+        # Getting total memory of machine
+        meminfo = dict((i.split()[0].rstrip(':'), int(i.split()[1]))
+                       for i in open('/proc/meminfo').readlines())
+        mem_total_kib = meminfo['MemTotal']
+        mem_total_gib = mem_total_kib*1.0e-6
+        # Getting number of total processes that can be run at once given memory constraints.
+        memper = int(Config.get("OPTIONS", "maxheap")[:-1])
+        at_once = int(mem_total_gib//memper)
+        print("This is the total number allowed at once: {0}".format(at_once))
+        total = grouper(LineNo.keys(), at_once)
+        totalcpu = mp.cpu_count() / int(nThreads)
+        print("Total processes at a time: {0}".format(totalcpu))
+        # pool = mp.Pool(processes=Config.getint("OPTIONS", "processes"))
+        print("Choosing the lesser of the two: {0}".format(min([at_once, totalcpu])))
+        pool = mp.Pool(processes=min([at_once, totalcpu]))
+        for group in total:
+            results = [pool.apply_async(func=worker, args=(i, )) for i in group]
+            for result in results:
+                result.wait()
+            print("="*100)
+            print("{0} has finished running.".format(str(group)))
 
-    print("="*200)
-    print("{0} has finished running.".format(__file__))
+        # print("="*200)
+        # print("{0} has finished running.".format(__file__))
 
-    # # Trimmomatic runs multi-thread on ALL threads so run each accession at a time.
-    # for i in LineNo.keys():
-    #     worker(i)
-    #     print("="*100)
-    #     print("{0} has finished running.".format(str(i)))
-    # print("="*200)
-    # print("{0} has finished running.".format(__file__))
+        # Trimmomatic runs multi-thread on ALL threads so run each accession at a time.
+        # for i in LineNo.keys():
+        #     worker(i)
+        #     print("="*100)
+        #     print("{0} has finished running.".format(str(i)))
+        # print("="*200)
+        # print("{0} has finished running.".format(__file__))
